@@ -1,61 +1,30 @@
 import { login, register } from './auth.js';
 import Swal from 'https://cdn.jsdelivr.net/npm/sweetalert2@11/+esm';
 
-// تعريف متغير المودال عالمياً
-let loginModalInstance;
+const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
 
-// الربط مع وظيفة الـ HTML لفتح المودال
-window.triggerShowLogin = (role) => {
-    const modalElement = document.getElementById('loginModal');
-    if (!modalElement) return;
-
-    // ضبط بيانات الدور المختار
+window.showLoginForm = (role) => {
     document.getElementById('userRole').value = role;
-    const roleTitle = role === 'admin' ? 'المديرة' : role === 'secretary' ? 'السكرتير' : 'الطالب';
-    document.getElementById('displayRole').textContent = roleTitle;
-
-    // تشغيل المودال
-    if (!loginModalInstance) {
-        loginModalInstance = new bootstrap.Modal(modalElement);
-    }
-    loginModalInstance.show();
+    document.getElementById('displayRole').textContent = 
+        role === 'admin' ? 'المديرة' : role === 'secretary' ? 'السكرتير' : 'الطالب';
+    loginModal.show();
 };
 
-// وظيفة تبديل حقول الطالب في التسجيل
-window.toggleRegFields = (role) => {
-    const fields = document.getElementById('student-fields');
-    if (fields) {
-        fields.style.display = (role === 'student') ? 'block' : 'none';
-    }
-};
-
-// مستمع حدث الدخول (Login)
-document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault(); // منع الصفحة من التحميل
-
+document.getElementById('doLogin').addEventListener('click', () => {
     const email = document.getElementById('login-email').value;
     const pass = document.getElementById('login-password').value;
     const code = document.getElementById('login-code').value;
-    const selectedRole = document.getElementById('userRole').value;
+    const selectedRole = document.getElementById('userRole').value; // بناخد الدور اللي اختاره من الكارت
 
-    if (email && pass && code) {
-        const btn = e.target.querySelector('button[type="submit"]');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> جاري الدخول...';
-        
-        await login(email, pass, code, selectedRole);
-        
-        btn.disabled = false;
-        btn.innerHTML = 'دخول النظام';
+    if(email && pass && code) {
+        // بنبعت الدور المختار للـ Login عشان يتأكد منه
+        login(email, pass, code, selectedRole);
     } else {
         Swal.fire('تنبيه', 'يرجى ملء كافة الحقول مع الكود السري', 'warning');
     }
 });
 
-// مستمع حدث التسجيل (Register)
-document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
+document.getElementById('doRegister').addEventListener('click', () => {
     const name = document.getElementById('reg-name').value;
     const email = document.getElementById('reg-email').value;
     const pass = document.getElementById('reg-password').value;
@@ -63,24 +32,9 @@ document.getElementById('registerForm')?.addEventListener('submit', async (e) =>
     const stage = document.getElementById('reg-stage').value;
     const subject = document.getElementById('reg-subject').value;
 
-    if (name && email && pass && role) {
-        const btn = e.target.querySelector('button[type="submit"]');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> جاري المعالجة...';
-
-        await register(email, pass, name, '', stage, subject, role);
-        
-        btn.disabled = false;
-        btn.innerHTML = 'تأكيد إنشاء الحساب';
+    if(name && email && pass && role) {
+        register(email, pass, name, '', stage, subject, role);
     } else {
         Swal.fire('تنبيه', 'يرجى إكمال البيانات واختيار نوع الحساب', 'warning');
     }
-});
-
-// حل مشكلة "تعليق الشاشة" عند إغلاق النوافذ
-document.addEventListener('hidden.bs.modal', function () {
-    const backdrops = document.querySelectorAll('.modal-backdrop');
-    backdrops.forEach(b => b.remove());
-    document.body.style.overflow = 'auto';
-    document.body.style.paddingRight = '0';
 });
