@@ -11,31 +11,32 @@
 <body>
 
   <div class="container text-center py-5">
-    <h1 class="mb-5">مرحباً بك في مدرسة مارينا وجيه</h1>
+    <h1 class="mb-5 text-white shadow-text">مرحباً بك في مدرسة مارينا وجيه</h1>
+    
     <div class="row g-4 justify-content-center">
       <div class="col-md-3 col-sm-6">
-        <div class="card h-100 shadow" onclick="showLoginForm('admin')">
+        <div class="card h-100 shadow clickable-card" onclick="showLoginForm('admin')">
           <div class="card-body">
-            <i class="fas fa-user-tie fa-3x mb-3 text-danger"></i>
-            <h5>المديرة</h5>
+            <i class="fas fa-user-shield fa-3x mb-3 text-danger"></i>
+            <h5>لوحة المديرة</h5>
             <button class="btn btn-danger w-100 mt-2">دخول</button>
           </div>
         </div>
       </div>
       <div class="col-md-3 col-sm-6">
-        <div class="card h-100 shadow" onclick="showLoginForm('secretary')">
+        <div class="card h-100 shadow clickable-card" onclick="showLoginForm('secretary')">
           <div class="card-body">
-            <i class="fas fa-user-secret fa-3x mb-3 text-success"></i>
-            <h5>السكرتير</h5>
+            <i class="fas fa-user-tie fa-3x mb-3 text-success"></i>
+            <h5>لوحة السكرتير</h5>
             <button class="btn btn-success w-100 mt-2">دخول</button>
           </div>
         </div>
       </div>
       <div class="col-md-3 col-sm-6">
-        <div class="card h-100 shadow" onclick="showLoginForm('student')">
+        <div class="card h-100 shadow clickable-card" onclick="showLoginForm('student')">
           <div class="card-body">
             <i class="fas fa-user-graduate fa-3x mb-3 text-primary"></i>
-            <h5>الطالب</h5>
+            <h5>لوحة الطالب</h5>
             <button class="btn btn-primary w-100 mt-2">دخول</button>
           </div>
         </div>
@@ -43,20 +44,33 @@
     </div>
 
     <div class="mt-5">
-      <button class="btn btn-outline-light btn-lg" data-bs-toggle="modal" data-bs-target="#registerModal">إنشاء حساب جديد</button>
+      <button class="btn btn-outline-light btn-lg shadow" data-bs-toggle="modal" data-bs-target="#registerModal">
+        <i class="fas fa-user-plus"></i> إنشاء حساب جديد
+      </button>
     </div>
 
     <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header"><h5>تسجيل دخول <span id="displayRole"></span></h5></div>
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title">تسجيل دخول <span id="displayRole"></span></h5>
+          </div>
           <div class="modal-body">
             <form id="loginForm">
               <input type="hidden" id="userRole">
-              <input type="email" class="form-control mb-3" id="login-email" placeholder="البريد الإلكتروني" required>
-              <input type="password" class="form-control mb-3" id="login-password" placeholder="كلمة المرور" required>
-              <input type="text" class="form-control mb-3" id="login-code" placeholder="كود الدخول السري" required>
-              <button type="button" class="btn btn-primary w-100" id="doLogin">دخول النظام</button>
+              <div class="mb-3">
+                <label class="form-label">البريد الإلكتروني</label>
+                <input type="email" class="form-control" id="login-email" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">كلمة المرور</label>
+                <input type="password" class="form-control" id="login-password" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label text-danger fw-bold">كود الدخول السري</label>
+                <input type="text" class="form-control border-danger" id="login-code" required>
+              </div>
+              <button type="button" class="btn btn-primary w-100 py-2" id="doLogin">دخول النظام</button>
             </form>
           </div>
         </div>
@@ -65,24 +79,28 @@
 
     <div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header"><h5>إنشاء حساب جديد</h5></div>
-          <div class="modal-body">
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title">فتح حساب جديد</h5>
+          </div>
+          <div class="modal-body text-start">
             <form id="registerForm">
               <input type="text" class="form-control mb-3" id="reg-name" placeholder="الاسم الكامل" required>
               <input type="email" class="form-control mb-3" id="reg-email" placeholder="البريد الإلكتروني" required>
-              <input type="password" class="form-control mb-3" id="reg-password" placeholder="كلمة المرور (6+)" required>
+              <input type="password" class="form-control mb-3" id="reg-password" placeholder="كلمة المرور (6 أرقام فأكثر)" required>
+              
+              <label class="mb-1 small">اختر وظيفتك:</label>
               <select class="form-select mb-3" id="reg-role" onchange="toggleRegFields(this.value)" required>
-                <option value="" disabled selected>نوع الحساب</option>
-                <option value="admin">مديرة</option>
-                <option value="secretary">سكرتير</option>
+                <option value="" disabled selected>-- اختر من هنا --</option>
+                <option value="secretary">سكرتير / موظف</option>
                 <option value="student">طالب</option>
               </select>
-              <div id="student-fields" style="display:none;">
-                <input type="text" class="form-control mb-3" id="reg-stage" placeholder="المرحلة الدراسية">
-                <input type="text" class="form-control mb-3" id="reg-subject" placeholder="المادة">
+
+              <div id="student-fields" style="display:none;" class="p-2 bg-light rounded mb-3">
+                <input type="text" class="form-control mb-2" id="reg-stage" placeholder="المرحلة الدراسية">
+                <input type="text" class="form-control mb-2" id="reg-subject" placeholder="المادة الأساسية">
               </div>
-              <button type="button" class="btn btn-success w-100" id="doRegister">إنشاء الحساب</button>
+              <button type="button" class="btn btn-success w-100 py-2" id="doRegister">تأكيد إنشاء الحساب</button>
             </form>
           </div>
         </div>
