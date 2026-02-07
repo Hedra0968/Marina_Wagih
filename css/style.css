@@ -1,0 +1,140 @@
+:root {
+  --primary: #007bff;
+  --accent: #ff9800;
+  --success: #4caf50;
+  --danger: #dc3545;
+  --warning: #ffc107;
+  --background: linear-gradient(to bottom, #2196f3, #ffffff);
+  --card-bg: rgba(255, 255, 255, 0.95);
+  --text-dark: #333;
+  --text-light: #fff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Tajawal', Arial, sans-serif;
+  background: var(--background);
+  background-size: cover;
+  background-attachment: fixed;
+  margin: 0;
+  padding: 20px;
+  min-height: 100vh;
+  direction: rtl;
+  text-align: right;
+  color: var(--text-dark);
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: url('https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0') repeat;
+  opacity: 0.08;
+  z-index: -2;
+}
+
+.container {
+  position: relative;
+  z-index: 2;
+}
+
+h1, h2, h5 {
+  color: var(--text-light);
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 25px;
+  margin: 15px 0;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+}
+
+button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary { background: var(--primary); color: white; }
+.btn-danger   { background: var(--danger);   color: white; }
+.btn-success  { background: var(--success);  color: white; }
+.btn-warning  { background: var(--accent);   color: white; }
+
+.btn-outline-light {
+  border: 2px solid white;
+  color: white;
+  background: transparent;
+}
+
+.btn-outline-light:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+.form-control, .form-select {
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid #ccc;
+  transition: border 0.3s;
+  background: white !important;
+  color: black !important;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 0.25rem rgba(0,123,255,0.25);
+}
+
+/* حل مشكلة عدم الكتابة */
+.modal,
+.modal * {
+  pointer-events: auto !important;
+}
+
+.modal-backdrop {
+  pointer-events: none !important;
+  background: rgba(0,0,0,0.5) !important;
+}
+
+.modal input, .modal select, .modal textarea,
+.form-control, .form-select {
+  pointer-events: auto !important;
+  user-select: text !important;
+  cursor: text !important;
+  opacity: 1 !important;
+  background: white !important;
+  color: black !important;
+  z-index: 1056 !important;
+}
+
+.text-center.mt-5 {
+  margin-top: 3rem !important;
+  padding: 20px 0;
+  position: relative;
+  z-index: 10;
+}
+
+@media (max-width: 768px) {
+  .grid { grid-template-columns: 1fr; }
+  .card { padding: 20px; }
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
