@@ -5,89 +5,102 @@
   --accent: #ff9800;
   --success: #4caf50;
   --danger: #dc3545;
-  --warning: #ffc107;
   --background: linear-gradient(to bottom, #2196f3, #ffffff);
-  --card-bg: rgba(255, 255, 255, 0.95);
   --text-dark: #333;
   --text-light: #fff;
 }
 
 * {
   box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
+  -webkit-tap-highlight-color: transparent; /* تحسين استجابة اللمس في الفون */
 }
 
 body {
-  font-family: 'Tajawal', sans-serif;
+  font-family: 'Tajawal', Arial, sans-serif;
   background: var(--background);
   background-size: cover;
   background-attachment: fixed;
   margin: 0;
-  padding: 10px;
+  padding: 15px;
   min-height: 100vh;
   direction: rtl;
   text-align: right;
-  color: var(--text-dark);
 }
 
-/* --- الحل الجذري لمشكلة الصورة --- */
+/* --- الحل النهائي لمشكلة الموبايل (إزالة الطبقة المعطلة) --- */
 
-/* 1. جعل الطبقة السوداء خلف كل شيء دائماً */
+/* 1. حذف الطبقة السوداء الشفافة تماماً لأنها هي اللي بتقفل اللمس في الفون */
 .modal-backdrop {
-  z-index: 1040 !important;
-  background-color: #000 !important;
-  opacity: 0.7 !important;
+  display: none !important;
 }
 
-/* 2. رفع النافذة فوق الطبقة السوداء بمسافة كافية */
+/* 2. جعل النافذة تظهر بوضوح فوق الموقع وبخلفية معتمة خاصة بها */
 .modal {
-  z-index: 1060 !important;
-  pointer-events: auto !important;
+  background: rgba(0, 0, 0, 0.8); /* تعتيم من داخل المودال نفسه لضمان الوصول للزراير */
+  padding: 10px !important;
 }
 
 .modal-content {
-  z-index: 1070 !important;
   background: #fff !important;
-  border-radius: 12px;
+  border-radius: 15px;
+  color: #000 !important;
   border: none;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  pointer-events: auto !important; /* تأكيد إمكانية الضغط */
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
 }
 
-/* ضمان أن المدخلات والزراير قابلة للضغط في الموبايل */
-.form-control, .form-select, button, .btn {
-  position: relative;
-  z-index: 1080 !important;
+/* --- تنسيق الحقول لتعمل 100% في الموبايل --- */
+.form-control, .form-select {
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid #ccc;
+  background: #fff !important;
+  color: #000 !important;
+  font-size: 16px !important; /* مهم جداً لمنع زووم الآيفون اللي بيعطل الكتابة */
   pointer-events: auto !important;
-  cursor: pointer;
+  display: block;
+  width: 100%;
 }
 
-/* --- باقي التنسيقات الأصلية --- */
-
-h1, h2, h5 {
-  color: var(--text-light);
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
-}
-
+/* --- تنسيق الكروت (الصفحة الرئيسية) --- */
 .card {
-  background: var(--card-bg);
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 12px;
   padding: 20px;
-  margin: 10px 0;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  margin: 15px 0;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  border: none;
 }
 
-.form-control {
-  border: 1px solid #ccc;
+h1, h2 {
+  color: #fff;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+  margin-bottom: 25px;
+}
+
+/* --- الأزرار --- */
+button, .btn {
   padding: 12px;
-  font-size: 16px !important; /* لمنع الزوم في الآيفون */
-  background-color: #fff !important;
-  color: #000 !important;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  width: 100%; /* عشان تكون سهلة اللمس في الموبايل */
+  display: inline-block;
 }
 
 .btn-primary { background: var(--primary); color: white; }
-.btn-success  { background: var(--success); color: white; }
+.btn-success { background: var(--success); color: white; }
+.btn-danger { background: var(--danger); color: white; }
 
+.btn-outline-light {
+  border: 2px solid white;
+  color: white;
+  background: transparent;
+  width: auto;
+}
+
+/* تحسينات الشاشات الصغيرة */
 @media (max-width: 768px) {
-  body { padding: 15px; }
+  body { padding: 10px; }
+  .card { padding: 15px; }
 }
