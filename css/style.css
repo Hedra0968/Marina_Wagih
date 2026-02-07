@@ -1,10 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+
 :root {
   --primary: #007bff;
   --accent: #ff9800;
   --success: #4caf50;
   --danger: #dc3545;
   --warning: #ffc107;
-  --background: linear-gradient(to bottom, #2196f3, #ffffff);
+  --background: linear-gradient(to bottom, #1a1a2e, #16213e); /* عدلت التدرج ليناسب شكل الموقع المظلم */
   --card-bg: rgba(255, 255, 255, 0.95);
   --text-dark: #333;
   --text-light: #fff;
@@ -26,6 +28,7 @@ body {
   text-align: right;
   color: var(--text-dark);
   position: relative;
+  overflow-x: hidden;
 }
 
 body::before {
@@ -38,6 +41,35 @@ body::before {
   z-index: -2;
 }
 
+/* --- تعديل التضليم والتركيز (Focus Effect) --- */
+
+/* تضليم الخلفية ورا النافذة */
+.modal-backdrop.show {
+  opacity: 0.85 !important; /* تضليم قوي */
+  background-color: #000 !important;
+  backdrop-filter: blur(8px); /* غبش للخلفية عشان اللي ورا يختفي */
+  pointer-events: auto !important; /* عشان يمنع التفاعل مع اللي ورا */
+}
+
+/* النافذة المنورة */
+.modal-content {
+  background: #ffffff !important;
+  color: var(--text-dark) !important;
+  border-radius: 20px;
+  border: 3px solid var(--primary); /* برواز عشان تنور */
+  box-shadow: 0 0 50px rgba(255, 255, 255, 0.2), 0 20px 40px rgba(0,0,0,0.6);
+  transform: scale(1.02);
+  z-index: 1060 !important;
+}
+
+.modal-header {
+  border-bottom: 1px solid #eee;
+  background: #f8f9fa;
+  border-radius: 20px 20px 0 0;
+}
+
+/* --- بقية التنسيقات من كودك --- */
+
 .container {
   position: relative;
   z-index: 2;
@@ -45,7 +77,7 @@ body::before {
 
 h1, h2, h5 {
   color: var(--text-light);
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
 }
 
 .card {
@@ -53,7 +85,7 @@ h1, h2, h5 {
   border-radius: 12px;
   padding: 25px;
   margin: 15px 0;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.3);
   transition: all 0.3s ease;
   backdrop-filter: blur(5px);
   border: 1px solid rgba(255,255,255,0.3);
@@ -61,7 +93,11 @@ h1, h2, h5 {
 
 .card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+}
+
+.clickable-card {
+  cursor: pointer;
 }
 
 button {
@@ -93,36 +129,17 @@ button {
   border-radius: 8px;
   padding: 12px;
   border: 1px solid #ccc;
-  transition: border 0.3s;
+  transition: all 0.3s;
   background: white !important;
   color: black !important;
+  pointer-events: auto !important;
+  user-select: text !important;
 }
 
 .form-control:focus, .form-select:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 0.25rem rgba(0,123,255,0.25);
-}
-
-/* حل مشكلة عدم الكتابة */
-.modal,
-.modal * {
-  pointer-events: auto !important;
-}
-
-.modal-backdrop {
-  pointer-events: none !important;
-  background: rgba(0,0,0,0.5) !important;
-}
-
-.modal input, .modal select, .modal textarea,
-.form-control, .form-select {
-  pointer-events: auto !important;
-  user-select: text !important;
-  cursor: text !important;
-  opacity: 1 !important;
-  background: white !important;
-  color: black !important;
-  z-index: 1056 !important;
+  background: #fff !important;
 }
 
 .text-center.mt-5 {
@@ -133,8 +150,5 @@ button {
 }
 
 @media (max-width: 768px) {
-  .grid { grid-template-columns: 1fr; }
   .card { padding: 20px; }
 }
-
-@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
