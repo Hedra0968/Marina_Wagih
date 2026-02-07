@@ -14,6 +14,7 @@
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent; /* تحسين اللمس للموبايل */
 }
 
 body {
@@ -22,7 +23,7 @@ body {
   background-size: cover;
   background-attachment: fixed;
   margin: 0;
-  padding: 20px;
+  padding: 10px; /* تقليل الحواف للموبايل */
   min-height: 100vh;
   direction: rtl;
   text-align: right;
@@ -42,7 +43,7 @@ body::before {
 
 .container {
   position: relative;
-  z-index: 2;
+  z-index: 1; /* ضبط ترتيب الطبقة الرئيسية */
 }
 
 h1, h2, h5 {
@@ -50,6 +51,7 @@ h1, h2, h5 {
   text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
 }
 
+/* --- تنسيق الكروت --- */
 .card {
   background: var(--card-bg);
   border-radius: 12px;
@@ -66,6 +68,27 @@ h1, h2, h5 {
   box-shadow: 0 12px 25px rgba(0,0,0,0.25);
 }
 
+/* --- الحل النهائي لمشكلة الموبايل والشاشة السوداء --- */
+
+/* جعل الطبقة السوداء دائماً خلف النافذة */
+.modal-backdrop {
+  z-index: 1040 !important;
+}
+
+/* رفع النافذة فوق أي حاجة تانية وضمان اللمس */
+.modal {
+  z-index: 1050 !important;
+  pointer-events: auto !important;
+}
+
+.modal-content {
+  border-radius: 15px;
+  border: none;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  pointer-events: auto !important;
+}
+
+/* --- الأزرار --- */
 button {
   padding: 12px 24px;
   border: none;
@@ -74,6 +97,7 @@ button {
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
+  pointer-events: auto !important;
 }
 
 .btn-primary { background: var(--primary); color: white; }
@@ -87,20 +111,18 @@ button {
   background: transparent;
 }
 
-.btn-outline-light:hover {
-  background: rgba(255,255,255,0.25);
-}
-
+/* --- الحقول لضمان الكتابة في الموبايل --- */
 .form-control, .form-select {
   border-radius: 8px;
   padding: 12px;
   border: 1px solid #ccc;
-  transition: border 0.3s;
   background: white !important;
   color: black !important;
+  font-size: 16px !important; /* يمنع زوم الموبايل الإجباري */
+  pointer-events: auto !important;
 }
 
-.form-control:focus, .form-select:focus {
+.form-control:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 0.25rem rgba(0,123,255,0.25);
 }
@@ -108,10 +130,12 @@ button {
 .text-center.mt-5 {
   margin-top: 3rem !important;
   padding: 20px 0;
-  position: relative;
   z-index: 10;
 }
 
+/* تحسينات إضافية للموبايل الصغير */
 @media (max-width: 768px) {
-  .card { padding: 20px; }
+  body { padding: 15px; }
+  .card { padding: 20px; margin: 10px 0; }
+  h1 { font-size: 1.8rem; }
 }
