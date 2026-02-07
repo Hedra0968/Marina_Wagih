@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+
 :root {
   --primary: #007bff;
   --accent: #ff9800;
@@ -113,5 +115,3 @@ button {
 @media (max-width: 768px) {
   .card { padding: 20px; }
 }
-
-@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
