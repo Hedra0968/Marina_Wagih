@@ -8,10 +8,10 @@ import {
 import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js";
 import Swal from 'https://cdn.jsdelivr.net/npm/sweetalert2@11/+esm';
 
-// توليد كود سري عشوائي
+// توليد كود دخول سري عشوائي
 const generateAccessCode = () => Math.random().toString(36).substring(2, 8).toUpperCase();
 
-// --- وظيفة التسجيل (Register) ---
+// تسجيل حساب جديد (ينزل بحالة معلق pending)
 export async function register(email, password, name, phone, stage, subject, role) {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -19,13 +19,9 @@ export async function register(email, password, name, phone, stage, subject, rol
         
         const userData = {
             uid: userCredential.user.uid,
-            name: name,
-            email: email,
-            phone: phone || '',
-            role: role,
-            accessCode: accessCode,
+            name, email, phone, role, accessCode,
             createdAt: new Date(),
-            status: (role === 'admin' ? 'active' : 'pending') // المديرة تتفعل تلقائياً
+            status: 'pending' // ⚠️ الحساب معلق افتراضياً
         };
 
         if (role === 'student') {
@@ -37,33 +33,22 @@ export async function register(email, password, name, phone, stage, subject, rol
 
         await setDoc(doc(db, "users", userCredential.user.uid), userData);
         
-        // تسجيل خروج إجباري بعد التسجيل لحين التفعيل
-        await signOut(auth);
-
         await Swal.fire({
-            title: 'تم التسجيل بنجاح!',
-            html: `
-                <div class="p-3 shadow-sm rounded border border-danger">
-                    <p class="mb-1">كودك السري هو:</p>
-                    <h2 class="text-danger fw-bold">${accessCode}</h2>
-                    <p class="small text-muted mt-2">انسخ الكود؛ ستحتاجه في كل عملية دخول.</p>
-                </div>
-                <p class="mt-3">حسابك الآن قيد المراجعة من الدكتورة مارينا.</p>
-            `,
-            icon: 'success'
+            title: 'تم تسجيل طلبك بنجاح!',
+            html: `كودك السري هو: <b style="color:red; font-size:24px;">${accessCode}</b><br><br>حسابك الآن <b>قيد المراجعة</b>. تواصل مع المديرة لتفعيل الحساب قبل محاولة الدخول.`,
+            icon: 'info',
+            confirmButtonText: 'فهمت'
         });
         
-        window.location.reload(); 
+        await signOut(auth); // طرده فوراً حتى لا يدخل قبل التفعيل
+        window.location.href = 'index.html';
         
     } catch (error) {
-        let msg = "حدث خطأ أثناء التسجيل";
-        if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل بالفعل!";
-        if (error.code === 'auth/weak-password') msg = "كلمة المرور ضعيفة جداً!";
-        Swal.fire('خطأ', msg, 'error');
+        Swal.fire('خطأ', 'حدث خطأ في التسجيل: ' + error.message, 'error');
     }
 }
 
-// --- وظيفة تسجيل الدخول (Login) ---
+// تسجيل الدخول مع فحص الحالة
 export async function login(email, password, providedCode, selectedRole) {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -72,71 +57,49 @@ export async function login(email, password, providedCode, selectedRole) {
         if (userDoc.exists()) {
             const data = userDoc.data();
             
-            // 1. فحص الكود السري (الأولوية القصوى)
+            // 1. فحص التفعيل (المديرة مستثناة من الفحص لتتمكن من الدخول)
+            if (data.status === 'pending' && data.role !== 'admin') {
+                await signOut(auth);
+                Swal.fire('الحساب غير نشط', 'عذراً، لم يتم تفعيل حسابك من قبل المديرة بعد.', 'warning');
+                return;
+            }
+
+            // 2. فحص الكود السري
             if (data.accessCode !== providedCode) {
                 await signOut(auth);
-                Swal.fire('فشل الدخول', 'الكود السري الذي أدخلته غير صحيح!', 'error');
+                Swal.fire('خطأ', 'كود الدخول السري غير صحيح!', 'error');
                 return;
             }
 
-            // 2. فحص الرتبة (تأكد إنه داخل من الكارت الصح)
+            // 3. فحص الرتبة (الباب الصحيح)
             if (data.role !== selectedRole) {
                 await signOut(auth);
-                Swal.fire('تنبيه', 'هذا الحساب غير مسجل بهذه الرتبة!', 'warning');
+                Swal.fire('دخول مرفوض', `هذا الحساب غير مسجل كـ ${selectedRole}`, 'warning');
                 return;
             }
 
-            // 3. فحص التفعيل (لغير المديرين)
-            if (data.role !== 'admin' && data.status === 'pending') {
-                await signOut(auth);
-                Swal.fire('انتظر التفعيل', 'حسابك في انتظار موافقة الإدارة.', 'info');
-                return;
-            }
-
-            // نجاح الدخول - توجيه المستخدم
-            redirectByRole(data.role);
+            Swal.fire({ title: 'نجاح', text: 'جاري تحويلك للوحة التحكم...', icon: 'success', timer: 1000, showConfirmButton: false });
+            setTimeout(() => redirectByRole(data.role), 1000);
         }
     } catch (error) {
-        Swal.fire('خطأ في الدخول', 'تأكد من البريد الإلكتروني وكلمة المرور', 'error');
+        Swal.fire('خطأ', 'بيانات الدخول غير صحيحة', 'error');
     }
 }
 
-// --- تسجيل الخروج ---
 export function logout() {
-    signOut(auth).then(() => {
-        window.location.href = 'index.html';
-    });
+    signOut(auth).then(() => window.location.href = 'index.html');
 }
 
-// --- نظام التوجيه الذكي ---
 export function redirectByRole(role) {
-    const pages = {
-        'admin': 'admin.html',
-        'secretary': 'secretary.html',
-        'student': 'student.html'
-    };
-    if (pages[role]) window.location.href = pages[role];
+    if (role === 'admin') window.location.href = 'admin.html';
+    else if (role === 'secretary') window.location.href = 'secretary.html';
+    else if (role === 'student') window.location.href = 'student.html';
+    else window.location.href = 'index.html';
 }
 
-// --- مراقب الحماية (Auth Guard) ---
-onAuthStateChanged(auth, async (user) => {
+onAuthStateChanged(auth, (user) => {
     const path = window.location.pathname;
-    const isIndex = path.includes('index.html') || path === '/' || path.endsWith('Marina_Wagih/');
-
-    if (user) {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) {
-            const data = userDoc.data();
-            
-            // لو في صفحة الدخول وهو مسجل أصلاً.. وجهه لصفحته
-            if (isIndex) {
-                redirectByRole(data.role);
-            }
-        }
-    } else {
-        // لو مش مسجل دخول وبيحاول يدخل صفحة داخلية.. ارجعه للرئيسية
-        if (!isIndex) {
-            window.location.href = 'index.html';
-        }
+    if (!user && !path.includes('index.html')) {
+        window.location.href = 'index.html';
     }
 });
