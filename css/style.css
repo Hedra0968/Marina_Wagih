@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
-
 :root {
   --primary: #007bff;
   --accent: #ff9800;
@@ -30,7 +28,6 @@ body {
   position: relative;
 }
 
-/* صورة الخلفية الخفيفة */
 body::before {
   content: '';
   position: absolute;
@@ -51,7 +48,6 @@ h1, h2, h5 {
   text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
 }
 
-/* --- تنسيق الكروت --- */
 .card {
   background: var(--card-bg);
   border-radius: 12px;
@@ -61,7 +57,6 @@ h1, h2, h5 {
   transition: all 0.3s ease;
   backdrop-filter: blur(5px);
   border: 1px solid rgba(255,255,255,0.3);
-  cursor: pointer;
 }
 
 .card:hover {
@@ -69,40 +64,6 @@ h1, h2, h5 {
   box-shadow: 0 12px 25px rgba(0,0,0,0.25);
 }
 
-/* --- حل مشكلة التعتيم والضغط (المودال) --- */
-
-/* الطبقة السوداء - جعلناها خلف النافذة ولا تعترض الضغط */
-.modal-backdrop {
-  background-color: #000 !important;
-  opacity: 0.7 !important; /* درجة التعتيم */
-}
-
-/* النافذة المنبثقة - جعلناها "تنور" وتبرز */
-.modal-content {
-  background: #ffffff !important;
-  color: #333 !important;
-  border-radius: 15px;
-  border: 3px solid var(--primary); /* إطار مضيء */
-  box-shadow: 0 0 40px rgba(255, 255, 255, 0.4); /* إضاءة حول النافذة */
-  z-index: 1060 !important;
-}
-
-/* التأكد من أن الحقول تقبل الكتابة والضغط */
-.modal-body input, 
-.modal-body select, 
-.modal-body textarea,
-.form-control, 
-.form-select {
-  pointer-events: auto !important;
-  background: #ffffff !important;
-  color: #000000 !important;
-  border: 1px solid #ccc !important;
-  opacity: 1 !important;
-  z-index: 1100 !important;
-  position: relative;
-}
-
-/* --- الأزرار --- */
 button {
   padding: 12px 24px;
   border: none;
@@ -111,12 +72,12 @@ button {
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
-  pointer-events: auto !important; /* تأكيد أن الأزرار قابلة للضغط */
 }
 
 .btn-primary { background: var(--primary); color: white; }
 .btn-danger   { background: var(--danger);   color: white; }
 .btn-success  { background: var(--success);  color: white; }
+.btn-warning  { background: var(--accent);   color: white; }
 
 .btn-outline-light {
   border: 2px solid white;
@@ -128,10 +89,52 @@ button {
   background: rgba(255,255,255,0.25);
 }
 
+.form-control, .form-select {
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid #ccc;
+  transition: border 0.3s;
+  background: white !important;
+  color: black !important;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 0.25rem rgba(0,123,255,0.25);
+}
+
+/* حل مشكلة عدم الكتابة */
+.modal,
+.modal * {
+  pointer-events: auto !important;
+}
+
+.modal-backdrop {
+  pointer-events: none !important;
+  background: rgba(0,0,0,0.5) !important;
+}
+
+.modal input, .modal select, .modal textarea,
+.form-control, .form-select {
+  pointer-events: auto !important;
+  user-select: text !important;
+  cursor: text !important;
+  opacity: 1 !important;
+  background: white !important;
+  color: black !important;
+  z-index: 1056 !important;
+}
+
 .text-center.mt-5 {
   margin-top: 3rem !important;
+  padding: 20px 0;
+  position: relative;
+  z-index: 10;
 }
 
 @media (max-width: 768px) {
+  .grid { grid-template-columns: 1fr; }
   .card { padding: 20px; }
 }
+
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
