@@ -3,15 +3,16 @@
 :root {
   --primary: #007bff;
   --accent: #ff9800;
-  --success: #4caf50;
+  --success: #28a745;
   --danger: #dc3545;
-  --background: linear-gradient(to bottom, #2196f3, #ffffff);
-  --card-bg: rgba(255, 255, 255, 0.95);
-  --text-dark: #333;
-  --text-light: #fff;
+  --warning: #ffc107;
+  --info: #17a2b8;
+  --background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  --card-bg: rgba(255, 255, 255, 0.98);
+  --text-dark: #2d3436;
 }
 
-/* إعدادات الصفحة الأساسية */
+/* إعدادات عامة */
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -22,85 +23,116 @@ body {
   background: var(--background);
   background-attachment: fixed;
   margin: 0;
-  padding: 15px;
+  padding: 0;
   min-height: 100vh;
   direction: rtl;
   text-align: right;
   color: var(--text-dark);
 }
 
-/* --- الحل الجذري لمشكلة الشاشة السوداء --- */
-
-/* حذف الطبقة الشفافة التي تمنع الضغط نهائياً */
+/* حل مشكلة المودال في الموبايل (نهائي) */
 .modal-backdrop {
   display: none !important;
 }
 
-/* جعل المودال نفسه هو اللي يغطي الخلفية بدون منع اللمس */
 .modal {
-  background: rgba(0, 0, 0, 0.7); /* تعتيم الخلفية */
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
   pointer-events: auto !important;
 }
 
-/* ضمان ظهور محتوى النافذة فوق أي شيء آخر */
 .modal-content {
   z-index: 9999 !important;
-  background: #ffffff !important;
-  color: #000 !important;
-  border-radius: 15px;
+  border-radius: 20px;
   border: none;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  overflow: hidden;
+  box-shadow: 0 15px 50px rgba(0,0,0,0.3);
 }
 
-/* --- تنسيق الكروت (الصفحة الرئيسية) --- */
+/* تنسيق الكروت */
 .card {
   background: var(--card-bg);
-  border-radius: 12px;
-  padding: 25px;
-  margin: 15px 0;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-  transition: transform 0.3s ease;
-  cursor: pointer;
-  border: 1px solid rgba(0,0,0,0.05);
+  border-radius: 15px;
+  padding: 20px;
+  border: none;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .card:hover {
-  transform: translateY(-8px);
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
 }
 
-/* --- الحقول والأزرار لضمان التفاعل --- */
+/* تنسيق القوائم (Users, Attendance, Quizzes) */
+.list-group-item {
+  border: none;
+  margin-bottom: 8px;
+  border-radius: 10px !important;
+  background: #f8f9fa;
+  transition: 0.2s;
+}
+
+.list-group-item:hover {
+  background: #f1f2f6;
+}
+
+/* المدخلات (Inputs) */
 .form-control, .form-select {
-  border-radius: 8px;
-  padding: 12px;
-  background: #fff !important;
-  color: #000 !important;
-  border: 1px solid #ccc !important;
-  font-size: 16px !important; /* مهم لمنع الزوم في الآيفون */
-  pointer-events: auto !important;
+  border-radius: 10px;
+  padding: 12px 15px;
+  border: 2px solid #eee;
+  font-size: 16px !important;
+  transition: 0.3s;
 }
 
-button, .btn {
-  padding: 12px;
-  border-radius: 8px;
-  font-weight: bold;
-  pointer-events: auto !important;
+.form-control:focus {
+  border-color: var(--primary);
+  box-shadow: none;
+  background: #fff;
+}
+
+/* الأزرار */
+.btn {
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 700;
+  border: none;
+  transition: 0.3s;
   cursor: pointer;
 }
 
-.btn-primary { background: var(--primary); color: white; }
-.btn-danger   { background: var(--danger);   color: white; }
-.btn-success  { background: var(--success);  color: white; }
+.btn:active {
+  transform: scale(0.96);
+}
 
-/* العناوين */
-h1 {
-  color: white;
-  text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
-  margin-bottom: 40px;
+.btn-primary { background: var(--primary); color: white; }
+.btn-success { background: var(--success); color: white; }
+.btn-danger  { background: var(--danger); color: white; }
+.btn-warning { background: var(--warning); color: #000; }
+.btn-dark    { background: #2d3436; color: white; }
+
+/* شريط التمرير (Scrollbar) */
+.custom-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
 }
 
 /* تحسينات الموبايل */
 @media (max-width: 768px) {
-  body { padding: 10px; }
-  .card { padding: 20px; }
-  h1 { font-size: 1.5rem; }
+  .container { padding: 15px; }
+  h1, h3 { font-size: 1.5rem; }
+  .card { padding: 15px; }
+  .btn { width: 100%; margin-bottom: 5px; } /* الزراير تاخد العرض كامل في الموبايل لسهولة الضغط */
+}
+
+/* تأثيرات للنصوص */
+.shadow-text {
+  text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
 }
