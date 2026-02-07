@@ -14,7 +14,7 @@
 
 * {
   box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent; /* تحسين اللمس للموبايل */
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -23,31 +23,46 @@ body {
   background-size: cover;
   background-attachment: fixed;
   margin: 0;
-  padding: 10px; /* تقليل البادينج للموبايل */
+  padding: 10px;
   min-height: 100vh;
   direction: rtl;
   text-align: right;
   color: var(--text-dark);
 }
 
-/* حل مشكلة الموبايل الأساسية: التأكد من أن كل شيء قابل للمس */
-.modal, .modal-dialog, .modal-content, .form-control, button {
-  pointer-events: auto !important; 
-  touch-action: manipulation;
+/* --- الحل الجذري لمشكلة الصورة --- */
+
+/* 1. جعل الطبقة السوداء خلف كل شيء دائماً */
+.modal-backdrop {
+  z-index: 1040 !important;
+  background-color: #000 !important;
+  opacity: 0.7 !important;
 }
 
-/* تعديل تضليم الخلفية ليكون خفيف ولا يمنع اللمس */
-.modal-backdrop {
-  background-color: #000 !important;
-  opacity: 0.6 !important;
+/* 2. رفع النافذة فوق الطبقة السوداء بمسافة كافية */
+.modal {
+  z-index: 1060 !important;
+  pointer-events: auto !important;
 }
 
 .modal-content {
+  z-index: 1070 !important;
   background: #fff !important;
   border-radius: 12px;
   border: none;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  pointer-events: auto !important; /* تأكيد إمكانية الضغط */
 }
+
+/* ضمان أن المدخلات والزراير قابلة للضغط في الموبايل */
+.form-control, .form-select, button, .btn {
+  position: relative;
+  z-index: 1080 !important;
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+/* --- باقي التنسيقات الأصلية --- */
 
 h1, h2, h5 {
   color: var(--text-light);
@@ -60,40 +75,19 @@ h1, h2, h5 {
   padding: 20px;
   margin: 10px 0;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  transition: transform 0.2s;
 }
 
-button {
+.form-control {
+  border: 1px solid #ccc;
   padding: 12px;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  border: none;
+  font-size: 16px !important; /* لمنع الزوم في الآيفون */
+  background-color: #fff !important;
+  color: #000 !important;
 }
 
 .btn-primary { background: var(--primary); color: white; }
-.btn-danger   { background: var(--danger);   color: white; }
-.btn-success  { background: var(--success);  color: white; }
+.btn-success  { background: var(--success); color: white; }
 
-/* تنسيق الحقول لتعمل في الموبايل (iPhone & Android) */
-.form-control, .form-select {
-  border-radius: 8px;
-  padding: 12px;
-  border: 1px solid #ccc;
-  background-color: #fff !important;
-  color: #000 !important;
-  font-size: 16px !important; /* تمنع الزووم التلقائي المزعج في الآيفون */
-  display: block;
-  width: 100%;
-}
-
-.form-control:focus {
-  border-color: var(--primary);
-}
-
-/* تحسين شكل الشبكة في الموبايل */
 @media (max-width: 768px) {
   body { padding: 15px; }
-  .card { margin: 10px 0; padding: 15px; }
-  h1 { font-size: 1.5rem; }
 }
