@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+
 :root {
   --primary: #007bff;
   --accent: #ff9800;
@@ -12,35 +14,39 @@
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent; /* تحسين اللمس للموبايل */
 }
 
 body {
-  font-family: 'Tajawal', Arial, sans-serif;
+  font-family: 'Tajawal', sans-serif;
   background: var(--background);
   background-size: cover;
   background-attachment: fixed;
   margin: 0;
-  padding: 20px;
+  padding: 10px; /* تقليل البادينج للموبايل */
   min-height: 100vh;
   direction: rtl;
   text-align: right;
   color: var(--text-dark);
-  position: relative;
 }
 
-body::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: url('https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0') repeat;
-  opacity: 0.08;
-  z-index: -2;
+/* حل مشكلة الموبايل الأساسية: التأكد من أن كل شيء قابل للمس */
+.modal, .modal-dialog, .modal-content, .form-control, button {
+  pointer-events: auto !important; 
+  touch-action: manipulation;
 }
 
-.container {
-  position: relative;
-  z-index: 2;
+/* تعديل تضليم الخلفية ليكون خفيف ولا يمنع اللمس */
+.modal-backdrop {
+  background-color: #000 !important;
+  opacity: 0.6 !important;
+}
+
+.modal-content {
+  background: #fff !important;
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
 }
 
 h1, h2, h5 {
@@ -51,77 +57,43 @@ h1, h2, h5 {
 .card {
   background: var(--card-bg);
   border-radius: 12px;
-  padding: 25px;
-  margin: 15px 0;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-  transition: all 0.3s ease;
-  backdrop-filter: blur(5px);
-  border: 1px solid rgba(255,255,255,0.3);
-}
-
-.card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+  padding: 20px;
+  margin: 10px 0;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
 }
 
 button {
-  padding: 12px 24px;
-  border: none;
+  padding: 12px;
   border-radius: 8px;
-  font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
-  transition: all 0.3s ease;
+  border: none;
 }
 
 .btn-primary { background: var(--primary); color: white; }
 .btn-danger   { background: var(--danger);   color: white; }
 .btn-success  { background: var(--success);  color: white; }
-.btn-warning  { background: var(--accent);   color: white; }
 
-.btn-outline-light {
-  border: 2px solid white;
-  color: white;
-  background: transparent;
-}
-
-.btn-outline-light:hover {
-  background: rgba(255,255,255,0.25);
-}
-
+/* تنسيق الحقول لتعمل في الموبايل (iPhone & Android) */
 .form-control, .form-select {
   border-radius: 8px;
   padding: 12px;
   border: 1px solid #ccc;
-  transition: border 0.3s;
-  background: white !important;
-  color: black !important;
+  background-color: #fff !important;
+  color: #000 !important;
+  font-size: 16px !important; /* تمنع الزووم التلقائي المزعج في الآيفون */
+  display: block;
+  width: 100%;
 }
 
-.form-control:focus, .form-select:focus {
+.form-control:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 0.25rem rgba(0,123,255,0.25);
 }
 
-/* تعديل خلفية المودال ليكون احترافي وبسيط دون التأثير على الضغط */
-.modal-backdrop {
-  background-color: rgba(0, 0, 0, 0.7) !important;
-}
-
-.modal-content {
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-}
-
-.text-center.mt-5 {
-  margin-top: 3rem !important;
-  padding: 20px 0;
-  position: relative;
-  z-index: 10;
-}
-
+/* تحسين شكل الشبكة في الموبايل */
 @media (max-width: 768px) {
-  .card { padding: 20px; }
+  body { padding: 15px; }
+  .card { margin: 10px 0; padding: 15px; }
+  h1 { font-size: 1.5rem; }
 }
-
-@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
