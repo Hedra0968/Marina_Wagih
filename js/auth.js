@@ -32,19 +32,18 @@ export async function register(email, password, name, phone, stage, subject, rol
         await setDoc(doc(db, "users", userCredential.user.uid), userData);
         
         await Swal.fire({
-            title: 'تم إنشاء الحساب بنجاح!',
-            html: `كود الدخول السري الخاص بك هو: <br><b style="color:red; font-size:28px;">${accessCode}</b>`,
+            title: 'تم إنشاء الحساب!',
+            html: `كود الدخول السري الخاص بك هو: <br><b style="color:red; font-size:28px;">${accessCode}</b><br>احفظه جيداً.`,
             icon: 'success'
         });
         
         redirectByRole(role);
         
     } catch (error) {
-        Swal.fire('خطأ', 'حدث خطأ في التسجيل', 'error');
+        Swal.fire('خطأ', 'حدث خطأ أثناء التسجيل: ' + error.message, 'error');
     }
 }
 
-// التعديل هنا: ضفنا selectedRole (الدور اللي المستخدم اختاره من الصفحة الرئيسية)
 export async function login(email, password, providedCode, selectedRole) {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -53,27 +52,26 @@ export async function login(email, password, providedCode, selectedRole) {
         if (userDoc.exists()) {
             const data = userDoc.data();
             
-            // 1. التأكد من الكود السري
+            // 1. فحص الكود السري
             if (data.accessCode !== providedCode) {
                 await signOut(auth);
-                Swal.fire('خطأ في التحقق', 'كود الدخول السري غير صحيح!', 'error');
+                Swal.fire('خطأ', 'كود الدخول السري غير صحيح!', 'error');
                 return;
             }
 
-            // 2. التأكد إن الشخص داخل من "الباب" الصح (التحقق من الدور)
+            // 2. فحص الدور (الرتبة)
             if (data.role !== selectedRole) {
                 await signOut(auth);
                 const roleName = selectedRole === 'admin' ? 'المديرة' : selectedRole === 'secretary' ? 'السكرتير' : 'الطالب';
-                Swal.fire('دخول غير مصرح', `عذراً، هذا الحساب ليس له صلاحية الدخول كـ ${roleName}`, 'warning');
+                Swal.fire('تنبيه', `عذراً، هذا الحساب غير مسجل كـ ${roleName}`, 'warning');
                 return;
             }
 
-            // لو كله تمام يدخل
-            Swal.fire({ title: 'مرحباً بك', text: `تم الدخول بنجاح كـ ${data.role}`, icon: 'success', timer: 1500, showConfirmButton: false });
+            Swal.fire({ title: 'نجاح', text: 'جاري تحويلك للوحة التحكم...', icon: 'success', timer: 1500, showConfirmButton: false });
             setTimeout(() => redirectByRole(data.role), 1500);
         }
     } catch (error) {
-        Swal.fire('خطأ', 'بيانات الدخول غير صحيحة', 'error');
+        Swal.fire('خطأ', 'البريد أو كلمة المرور غير صحيحة', 'error');
     }
 }
 
