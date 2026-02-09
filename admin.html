@@ -9,75 +9,130 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body class="bg-light">
+<body>
   
-  <header class="py-3 mb-4 shadow-sm text-center bg-danger text-white">
-    <h3><i class="fas fa-user-shield me-2"></i> لوحة تحكم المديرة</h3>
+  <header class="py-3 mb-4 shadow-sm text-center bg-danger text-white main-header">
+    <h3><i class="fas fa-user-shield me-2"></i> لوحة تحكم المديرة مارينا</h3>
   </header>
 
   <div class="container">
+    <div class="row g-3 mb-4 text-center">
+        <div class="col-md-3 col-6">
+            <div class="card stat-card border-0 shadow-sm bg-primary text-white">
+                <div class="card-body">
+                    <i class="fas fa-user-graduate mb-2"></i>
+                    <h6 class="small">إجمالي الطلاب</h6>
+                    <h3 id="stat-total-students">0</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card stat-card border-0 shadow-sm bg-success text-white">
+                <div class="card-body">
+                    <i class="fas fa-check-double mb-2"></i>
+                    <h6 class="small">حاضرون اليوم</h6>
+                    <h3 id="stat-today-attendance">0</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card stat-card border-0 shadow-sm bg-warning text-dark">
+                <div class="card-body">
+                    <i class="fas fa-user-plus mb-2"></i>
+                    <h6 class="small">بانتظار التفعيل</h6>
+                    <h3 id="stat-pending-users">0</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card stat-card border-0 shadow-sm bg-info text-white">
+                <div class="card-body">
+                    <i class="fas fa-file-alt mb-2"></i>
+                    <h6 class="small">اختبارات منشورة</h6>
+                    <h3 id="stat-active-quizzes">0</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-      <h4 class="text-dark">أهلاً بكِ يا دكتورة مارينا</h4>
-      <button class="btn btn-dark shadow-sm" onclick="handleLogout()">
-        <i class="fas fa-sign-out-alt"></i> تسجيل خروج
-      </button>
+      <h4 class="fw-bold" id="admin-welcome">أهلاً بكِ يا دكتورة مارينا</h4>
+      <div class="d-flex gap-2">
+          <button class="btn btn-outline-dark shadow-sm" onclick="handleExportPDF()">
+            <i class="fas fa-file-pdf"></i> تقرير الحضور
+          </button>
+          <button class="btn btn-dark shadow-sm" onclick="handleLogout()">
+            <i class="fas fa-sign-out-alt"></i> خروج
+          </button>
+      </div>
     </div>
 
     <div class="row g-4">
       <div class="col-md-6">
-        <div class="card h-100 shadow border-0">
+        <div class="card h-100 shadow-sm border-0">
           <div class="card-body">
-            <h5 class="card-title text-danger mb-3"><i class="fas fa-cogs"></i> إعدادات المدرسة</h5>
-            <input class="form-control mb-2" id="school-name" placeholder="اسم المدرسة الجديد">
-            <input class="form-control mb-2" id="main-subject" placeholder="المادة الأساسية">
-            <button class="btn btn-danger w-100 py-2" onclick="handleSaveSettings()">حفظ التعديلات</button>
+            <h5 class="card-title text-danger mb-3 fw-bold"><i class="fas fa-cogs"></i> إعدادات المنصة</h5>
+            <div class="mb-2">
+                <label class="small fw-bold">اسم المدرسة/المادة:</label>
+                <input class="form-control" id="school-name" placeholder="مثلاً: مدرسة مارينا وجيه">
+            </div>
+            <div class="mb-3">
+                <label class="small fw-bold">المادة الأساسية الحالية:</label>
+                <input class="form-control" id="main-subject" placeholder="مثلاً: لغة إنجليزية">
+            </div>
+            <button class="btn btn-danger w-100 py-2 fw-bold" onclick="handleSaveSettings()">حفظ الإعدادات</button>
           </div>
         </div>
       </div>
 
       <div class="col-md-6">
-        <div class="card h-100 shadow border-0">
+        <div class="card h-100 shadow-sm border-0">
           <div class="card-body">
-            <h5 class="card-title text-success mb-3"><i class="fas fa-book"></i> إدارة المواد</h5>
-            <input class="form-control mb-2" id="new-subject" placeholder="اسم المادة الجديدة">
-            <button class="btn btn-success w-100 py-2" onclick="handleAddSubject()">إضافة مادة</button>
+            <h5 class="card-title text-success mb-3 fw-bold"><i class="fas fa-cloud-upload-alt"></i> المذكرات والملفات (PDF)</h5>
+            <input class="form-control mb-2" id="file-title" placeholder="اسم المذكرة (مثلاً: ملزمة الفصل الأول)">
+            <input class="form-control mb-2" id="file-url" placeholder="رابط الملف (Google Drive/Telegram)">
+            <button class="btn btn-success w-100 py-2 fw-bold" onclick="handleUploadFile()">نشر المذكرة للطلاب</button>
           </div>
         </div>
       </div>
 
       <div class="col-12">
-        <div class="card shadow border-0">
+        <div class="card shadow-sm border-0">
           <div class="card-body">
-            <h5 class="card-title text-primary mb-3"><i class="fas fa-users-cog"></i> التحكم في المستخدمين وصلاحيات السكرتارية</h5>
-            <p class="small text-muted mb-3">* من هنا يمكنكِ رؤية أكواد الطلاب وتفعيل الحسابات ومنح الصلاحيات.</p>
-            <ul id="users-list" class="list-group list-group-flush">
-              <li class="text-center py-4">
-                <div class="spinner-border text-primary" role="status"></div>
-                <br> جاري تحميل قائمة المستخدمين...
-              </li>
-            </ul>
+            <h5 class="card-title text-primary mb-3 fw-bold"><i class="fas fa-users-cog"></i> التحكم في الطلاب والسكرتارية</h5>
+            <div class="table-responsive custom-scroll" style="max-height: 400px;">
+                <ul id="users-list" class="list-group list-group-flush">
+                  <li class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <br> جاري جلب البيانات من السحابة...
+                  </li>
+                </ul>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="col-12">
-        <div class="card shadow border-0">
+      <div class="col-md-7">
+        <div class="card shadow-sm border-0 h-100">
           <div class="card-body">
-            <h5 class="card-title text-warning mb-3"><i class="fas fa-clipboard-check"></i> طلبات الحضور المعلقة (للمديرة)</h5>
-            <ul id="attendance-requests" class="list-group">
-                <li class="list-group-item text-center text-muted">لا يوجد طلبات معلقة حالياً</li>
-            </ul>
+            <h5 class="card-title text-warning mb-3 fw-bold"><i class="fas fa-clipboard-check"></i> طلبات الحضور المعلقة</h5>
+            <div class="custom-scroll" style="max-height: 300px;">
+                <ul id="attendance-requests" class="list-group list-group-flush">
+                    <li class="list-group-item text-center text-muted">لا يوجد طلبات حالياً</li>
+                </ul>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="col-12 mb-5">
-        <div class="card shadow border-0">
+      <div class="col-md-5">
+        <div class="card shadow-sm border-0 h-100 bg-light">
           <div class="card-body">
-            <h5 class="card-title text-dark mb-3"><i class="fas fa-edit"></i> نظام الكويزات التفاعلية</h5>
-            <input class="form-control mb-2" id="quiz-title" placeholder="عنوان الاختبار">
-            <textarea class="form-control mb-2" id="quiz-questions" rows="3" placeholder='أدخلي الأسئلة هنا...'></textarea>
-            <button class="btn btn-primary w-100 py-2" onclick="handleCreateQuiz()">نشر الاختبار للطالب</button>
+            <h5 class="card-title text-dark mb-3 fw-bold"><i class="fas fa-pencil-alt"></i> الكويزات التفاعلية</h5>
+            <input class="form-control mb-2" id="quiz-title" placeholder="عنوان الكويز">
+            <input class="form-control mb-2" id="quiz-link" placeholder="رابط الكويز (Google Forms / Quizizz)">
+            <p class="x-small text-muted mb-2">* يمكنكِ وضع رابط الاختبار وسيظهر للطالب فوراً.</p>
+            <button class="btn btn-primary w-100 py-2 fw-bold" onclick="handleCreateQuiz()">نشر الاختبار</button>
           </div>
         </div>
       </div>
@@ -93,11 +148,14 @@
     function handleSaveSettings() {
       if (typeof window.triggerSaveSettings === 'function') window.triggerSaveSettings();
     }
-    function handleAddSubject() {
-      if (typeof window.triggerAddSubject === 'function') window.triggerAddSubject();
+    function handleUploadFile() {
+      if (typeof window.triggerUploadFile === 'function') window.triggerUploadFile();
     }
     function handleCreateQuiz() {
       if (typeof window.triggerCreateQuiz === 'function') window.triggerCreateQuiz();
+    }
+    function handleExportPDF() {
+      if (typeof window.triggerExportPDF === 'function') window.triggerExportPDF();
     }
   </script>
 
