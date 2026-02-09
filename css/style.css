@@ -1,11 +1,12 @@
 /* File: style.css
     Rights: © 2026 Marina Wagih & Hadra Victor. All Rights Reserved.
     Theme: Smart Educational Platform - Luxury Dark/Light Mode
+    Description: Comprehensive styling for Admin, Secretary, and Student portals.
 */
 
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
 
-/* المتغيرات الأساسية مع تحسين التباين */
+/* --- 1. المتغيرات الأساسية (Root Variables) --- */
 :root {
   --primary: #0d6efd;
   --accent: #ff9800;
@@ -19,9 +20,10 @@
   --text-muted: #6c757d;
   --border-color: #dee2e6;
   --input-bg: #ffffff;
+  --shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
 
-/* تعديلات الوضع الليلي الصارمة لضمان وضوح الكتابة */
+/* --- 2. إعدادات الوضع الليلي (Dark Mode) --- */
 body.dark-mode {
   --background: #121212;
   --card-bg: #1e1e1e;
@@ -29,9 +31,10 @@ body.dark-mode {
   --text-muted: #adb5bd;
   --border-color: #383838;
   --input-bg: #2b2b2b;
+  --shadow: 0 10px 40px rgba(0,0,0,0.4);
 }
 
-/* إعدادات الحماية والخط */
+/* --- 3. التنسيقات العامة والحماية (Global Styles) --- */
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -50,17 +53,14 @@ body {
   color: var(--text-color);
   transition: background 0.4s ease, color 0.3s ease;
   overflow-x: hidden;
-}
-
-/* منع تحديد النصوص في كامل الموقع */
-body {
+  /* منع تحديد النصوص للحماية */
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
 }
 
-/* زر تبديل الثيم المطور */
+/* --- 4. عناصر التنقل والتحكم (UI Elements) --- */
 .theme-toggle {
   position: fixed;
   top: 20px;
@@ -81,19 +81,19 @@ body {
 }
 .theme-toggle:hover { transform: rotate(30deg) scale(1.1); }
 
-/* تنسيق الكروت الاحترافي */
+/* --- 5. الكروت (Cards) --- */
 .card {
   background-color: var(--card-bg) !important;
   border-radius: 20px !important;
   border: 1px solid var(--border-color) !important;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+  box-shadow: var(--shadow) !important;
   color: var(--text-color) !important;
   transition: all 0.3s ease;
 }
 .clickable-card { cursor: pointer; }
 .clickable-card:hover { transform: translateY(-10px); box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important; }
 
-/* حل نهائي لمشكلة اختفاء الكلام في الـ Input */
+/* --- 6. حقول الإدخال (Form Controls) --- */
 .form-control, .form-select, .input-group-text {
   background-color: var(--input-bg) !important;
   color: var(--text-color) !important;
@@ -110,7 +110,29 @@ body {
   opacity: 0.7;
 }
 
-/* تصميم الكارت الديجيتال للطالب (ثابت الألوان للفخامة) */
+/* --- 7. كود الأمان والحماية (Security Features) --- */
+#reg-security-code, #login-security-code {
+    letter-spacing: 3px;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    background: rgba(13, 110, 253, 0.05) !important;
+}
+
+.security-display-box {
+    background: rgba(0, 0, 0, 0.2);
+    border: 2px dashed var(--accent);
+    padding: 15px;
+    border-radius: 15px;
+    margin: 15px 0;
+    cursor: copy;
+    transition: 0.3s;
+    color: white;
+}
+.security-display-box:hover { background: rgba(0, 0, 0, 0.4); }
+
+/* --- 8. كارت الطالب الديجيتال (Student Digital Card) --- */
 .student-card-digital {
   background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
   width: 320px;
@@ -123,10 +145,16 @@ body {
   text-align: center;
   border: 4px solid rgba(255,255,255,0.2);
   box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+  animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1);
 }
 .student-card-digital * { color: white !important; }
 
-/* نقاط التميز */
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(50px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- 9. التنسيقات التفاعلية (Badges & Lists) --- */
 .points-badge {
   background: linear-gradient(45deg, #ffd700, #ffa500) !important;
   color: #000 !important;
@@ -135,16 +163,15 @@ body {
   font-size: 0.8rem;
 }
 
-/* حل مشاكل المودال والـ Backdrop */
-.modal-content {
-  background-color: var(--card-bg) !important;
-  color: var(--text-color) !important;
-  border: none !important;
-  border-radius: 25px !important;
+.status-badge {
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: bold;
 }
-.modal-backdrop.show { opacity: 0.8 !important; backdrop-filter: blur(5px); }
+.status-pending { background-color: var(--warning); color: #000; }
+.status-active { background-color: var(--success); color: #fff; }
 
-/* تنسيق الجداول والـ Lists في الوضع الليلي */
 .list-group-item {
   background-color: transparent !important;
   color: var(--text-color) !important;
@@ -153,7 +180,15 @@ body {
 .list-group-item:hover { background-color: rgba(0,0,0,0.05) !important; }
 .dark-mode .list-group-item:hover { background-color: rgba(255,255,255,0.05) !important; }
 
-/* شريط التمرير (Scrollbar) الملون */
+/* --- 10. تحسينات المودال وشريط التمرير --- */
+.modal-content {
+  background-color: var(--card-bg) !important;
+  color: var(--text-color) !important;
+  border: none !important;
+  border-radius: 25px !important;
+}
+.modal-backdrop.show { opacity: 0.8 !important; backdrop-filter: blur(5px); }
+
 .custom-scroll::-webkit-scrollbar { width: 6px; }
 .custom-scroll::-webkit-scrollbar-track { background: transparent; }
 .custom-scroll::-webkit-scrollbar-thumb {
@@ -161,16 +196,12 @@ body {
   border-radius: 10px;
 }
 
-/* تحسينات الموبايل */
+/* --- 11. ريسبونسيف الموبايل (Mobile Optimization) --- */
 @media (max-width: 768px) {
-  h1 { font-size: 1.8rem !important; }
+  h1, h2 { font-size: 1.6rem !important; }
   .container { padding-left: 15px; padding-right: 15px; }
   .card { margin-bottom: 10px; }
-  .student-card-digital { width: 100%; max-width: 300px; }
+  .student-card-digital { width: 100%; max-width: 300px; margin: 0 auto; }
 }
-
-/* تأثيرات إضافية */
-.shadow-text { text-shadow: 2px 4px 10px rgba(0,0,0,0.3); }
-.animate-hover:hover { transform: scale(1.02); transition: 0.3s; }
 
 /* Developed by Marina Wagih & Hadra Victor */
