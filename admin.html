@@ -31,6 +31,12 @@
     /* تحسين شكل التقرير */
     .report-card { border-right: 4px solid #dc3545 !important; transition: 0.3s; }
     .report-card:hover { transform: scale(1.02); }
+
+    /* إضافات الوضع الليلي */
+    .dark-mode { background-color: #1a1a1a !important; color: #ffffff; }
+    .dark-mode .card { background-color: #2d2d2d; color: #ffffff; border: 1px solid #404040; }
+    .dark-mode .text-dark { color: #ffffff !important; }
+    .dark-mode .list-group-item { background-color: #2d2d2d; color: #ffffff; border-color: #404040; }
   </style>
 </head>
 <body class="bg-light">
@@ -199,6 +205,35 @@
     </div>
   </div>
 
+  <div class="modal fade" id="evalModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header bg-warning text-dark border-0">
+                <h5 class="modal-title fw-bold">تقييم واجب الطالب</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <input type="hidden" id="eval-hw-id">
+                <input type="hidden" id="eval-student-id">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">اختر التقدير المناسب:</label>
+                    <select class="form-select border-0 bg-light shadow-none" id="eval-grade">
+                        <option value="امتياز 🌟">امتياز 🌟</option>
+                        <option value="جيد جداً 👍">جيد جداً 👍</option>
+                        <option value="جيد 🆗">جيد 🆗</option>
+                        <option value="ضعيف (يحتاج إعادة) ⚠️">ضعيف (يحتاج إعادة) ⚠️</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">ملاحظة للطالب:</label>
+                    <textarea class="form-control border-0 bg-light shadow-none" id="eval-note" rows="2" placeholder="اكتب تشجيع أو ملاحظة..."></textarea>
+                </div>
+                <button class="btn btn-warning w-100 py-2 fw-bold rounded-3 shadow-sm" onclick="window.submitEvaluation?.()">اعتماد التقييم ورصد النقاط</button>
+            </div>
+        </div>
+    </div>
+  </div>
+
   <footer class="text-center py-5 text-muted small">
       © 2026 مدرسة مارينا وجيه & هدرا فيكتور - جميع الحقوق محفوظة
   </footer>
@@ -206,22 +241,21 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   
   <script>
-    /* -------------------------------------------------------------------------
-       SHIELD PROTECTION: © Marina Wagih & Hadra Victor
-       ------------------------------------------------------------------------- */
+    /* حماية المحتوى */
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.onkeydown = e => {
         if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73)) return false;
     };
 
-    /* جسر التواصل مع JS */
-    function handleLogout() { window.triggerLogout?.(); }
-    function handleSaveSettings() { window.triggerSaveSettings?.(); }
-    function handleUploadFile() { window.triggerUploadFile?.(); }
-    function handleCreateQuiz() { window.triggerCreateQuiz?.(); }
-    function handleExportWeeklyPDF() { window.triggerExportWeeklyPDF?.(); }
-    function handleExportMonthlyPDF() { window.triggerExportMonthlyPDF?.(); }
+    /* دوال الربط مع ملف admin.js */
+    function handleLogout() { if(window.triggerLogout) window.triggerLogout(); }
+    function handleSaveSettings() { if(window.triggerSaveSettings) window.triggerSaveSettings(); }
+    function handleUploadFile() { if(window.triggerUploadFile) window.triggerUploadFile(); }
+    function handleCreateQuiz() { if(window.triggerCreateQuiz) window.triggerCreateQuiz(); }
+    function handleExportWeeklyPDF() { if(window.triggerExportWeeklyPDF) window.triggerExportWeeklyPDF(); }
+    function handleExportMonthlyPDF() { if(window.triggerExportMonthlyPDF) window.triggerExportMonthlyPDF(); }
 
+    /* تبديل الثيم */
     function toggleTheme() {
         const body = document.body;
         body.classList.toggle('dark-mode');
@@ -230,9 +264,17 @@
         document.getElementById('theme-icon').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
     }
     
-    // دالة لاستدعاء التبديل من الـ JS
-    window.togglePermission = (id, current) => {
-        if (window.handleTogglePermission) window.handleTogglePermission(id, current);
+    // تنفيذ الثيم المحفوظ عند التحميل
+    window.addEventListener('DOMContentLoaded', () => {
+        if (localStorage.getItem('m-theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.getElementById('theme-icon').className = 'fas fa-sun';
+        }
+    });
+
+    // دالة تبديل صلاحية السكرتير
+    window.togglePermission = (id, currentStatus) => {
+        if (window.handleTogglePermission) window.handleTogglePermission(id, currentStatus);
     };
   </script>
 
