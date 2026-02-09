@@ -1,3 +1,8 @@
+/* JS File: auth.js
+    Rights: © 2026 Marina Wagih & Hadra Victor. All Rights Reserved.
+    Core: Firebase Authentication & Security Logic
+*/
+
 import { auth, db } from './firebase-config.js';
 import { 
   createUserWithEmailAndPassword, 
@@ -8,9 +13,10 @@ import {
 import { doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js";
 import Swal from 'https://cdn.jsdelivr.net/npm/sweetalert2@11/+esm';
 
-// توليد كود دخول سري معقد (8 رموز)
+// --- 1. توليد كود دخول سري (8 رموز فريدة) ---
 const generateAccessCode = () => {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // استبعاد الحروف المتشابهة مثل O و 0
+    // استبعاد الحروف المتشابهة (I, L, 1, O, 0) لضمان سهولة القراءة للطالب
+    const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; 
     let code = "";
     for (let i = 0; i < 8; i++) {
         code += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -18,82 +24,94 @@ const generateAccessCode = () => {
     return code;
 };
 
-// تسجيل حساب جديد مع دعم الصورة الشخصية
-export async function register(email, password, name, photoURL, stage, subject, role) {
+// --- 2. وظيفة تسجيل حساب جديد (Register) ---
+export async function register(email, password, name, photoURL, stage, subject, role, phone) {
     try {
+        // إنشاء الحساب في Firebase Auth
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const accessCode = generateAccessCode();
         
         const userData = {
             uid: userCredential.user.uid,
-            name,
-            email,
-            role,
+            name: name,
+            email: email.toLowerCase(),
+            phone: phone || "غير مسجل",
+            role: role,
             photoURL: photoURL || "https://cdn-icons-png.flaticon.com/512/149/149071.png",
-            accessCode,
+            accessCode: accessCode,
+            points: 0, // رصيد نقاط التميز الابتدائي
             createdAt: serverTimestamp(),
-            status: 'pending' // الحساب معلق افتراضياً حتى تفعله مارينا
+            status: 'pending' // الحساب يظل معلقاً حتى تفعله المديرة
         };
 
-        // إضافة بيانات إضافية حسب الدور
+        // تخصيص البيانات بناءً على الرتبة
         if (role === 'student') {
             userData.stage = stage;
             userData.subject = subject;
         } else if (role === 'secretary') {
-            userData.canApproveAttendance = false;
+            userData.canApproveAttendance = false; // صلاحية تمنح يدوياً
         }
 
-        // حفظ البيانات في Firestore
+        // حفظ ملف المستخدم في Firestore
         await setDoc(doc(db, "users", userCredential.user.uid), userData);
         
-        // تسجيل الخروج فوراً لضمان عدم الدخول إلا بعد التفعيل
+        // تسجيل الخروج فوراً (لأن الحساب pending ولا يجب أن يدخل المنصة الآن)
         await signOut(auth);
 
-        // إرجاع البيانات لـ app.js لعرض الكارت
         return { success: true, userData };
         
     } catch (error) {
-        let errorMsg = "حدث خطأ في التسجيل";
-        if (error.code === 'auth/email-already-in-use') errorMsg = "هذا البريد مسجل بالفعل!";
-        Swal.fire('خطأ', errorMsg, 'error');
-        throw error;
+        console.error("Registration Error:", error);
+        throw error; // سيتم معالجته في app.js لإظهار التنبيه المناسب
     }
 }
 
-// تسجيل الدخول مع فحص "البوابة الصحيحة" والحالة
+// --- 3. وظيفة تسجيل الدخول (Login) مع فحص 3 مستويات من الأمان ---
 export async function login(email, password, providedCode, selectedRole) {
     try {
+        // التحقق الأولي من البريد وكلمة المرور
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
         
         if (userDoc.exists()) {
             const data = userDoc.data();
-            
-            // 1. فحص الرتبة (لازم يدخل من بوابته)
+
+            // المستوى 1: فحص "البوابة الصحيحة"
             if (data.role !== selectedRole) {
                 await signOut(auth);
-                Swal.fire('دخول مرفوض', `هذا الحساب مسجل كـ (${data.role === 'student' ? 'طالب' : 'إدارة'}) وليس ${selectedRole === 'student' ? 'طالب' : 'إدارة'}`, 'warning');
+                Swal.fire('دخول مرفوض', `هذا الحساب مخصص لـ (${data.role === 'student' ? 'الطلاب' : 'الإدارة'}) فقط.`, 'warning');
                 return;
             }
 
-            // 2. فحص التفعيل (المديرة مارينا مستثناة)
+            // المستوى 2: فحص "كود الأمان الشخصي"
+            if (data.accessCode !== providedCode.trim().toUpperCase()) {
+                await signOut(auth);
+                Swal.fire('كود خاطئ', 'كود الدخول السري غير صحيح، يرجى مراجعة الكارت الخاص بك.', 'error');
+                return;
+            }
+
+            // المستوى 3: فحص "حالة التفعيل" (المديرة مارينا مستثناة)
             if (data.status === 'pending' && data.role !== 'admin') {
                 await signOut(auth);
-                Swal.fire('الحساب معلق', 'يرجى التواصل مع المديرة لتفعيل حسابك أولاً.', 'info');
+                Swal.fire({
+                    title: 'الحساب بانتظار التفعيل',
+                    text: 'أهلاً بك! حسابك مسجل بنجاح، يرجى التواصل مع الدكتورة مارينا أو السكرتارية لتفعيل الحساب.',
+                    icon: 'info'
+                });
                 return;
             }
 
-            // 3. فحص كود الأمان
-            if (data.accessCode !== providedCode.toUpperCase()) {
+            // المستوى 4: فحص الحسابات المحذوفة
+            if (data.status === 'deleted') {
                 await signOut(auth);
-                Swal.fire('كود خاطئ', 'كود الأمان الذي أدخلته غير صحيح.', 'error');
+                Swal.fire('حساب غير صالح', 'تم إلغاء صلاحية الوصول لهذا الحساب.', 'error');
                 return;
             }
 
-            // نجاح الدخول
+            // نجاح كافة الفحوصات
             Swal.fire({ 
-                title: 'مرحباً بك', 
-                text: 'جاري فتح لوحة التحكم...', 
+                title: `مرحباً ${data.name.split(' ')[0]}`, 
+                text: 'جاري تحضير بياناتك...', 
                 icon: 'success', 
                 timer: 1500, 
                 showConfirmButton: false 
@@ -102,12 +120,19 @@ export async function login(email, password, providedCode, selectedRole) {
             setTimeout(() => redirectByRole(data.role), 1500);
         }
     } catch (error) {
-        Swal.fire('فشل الدخول', 'تأكد من البريد وكلمة المرور', 'error');
+        let errorMsg = "تأكد من البريد وكلمة المرور";
+        if (error.code === 'auth/user-not-found') errorMsg = "هذا الحساب غير موجود";
+        if (error.code === 'auth/wrong-password') errorMsg = "كلمة المرور غير صحيحة";
+        
+        Swal.fire('فشل الدخول', errorMsg, 'error');
     }
 }
 
+// --- 4. وظائف الملاحة والحماية ---
 export function logout() {
-    signOut(auth).then(() => window.location.href = 'index.html');
+    signOut(auth).then(() => {
+        window.location.replace('index.html'); // استخدام replace لمنع الرجوع للخلف
+    });
 }
 
 export function redirectByRole(role) {
@@ -119,12 +144,21 @@ export function redirectByRole(role) {
     window.location.href = pages[role] || 'index.html';
 }
 
-// مراقبة حالة الجلسة (الحماية)
-onAuthStateChanged(auth, (user) => {
+// --- 5. درع الحماية (Session Guard) ---
+onAuthStateChanged(auth, async (user) => {
     const path = window.location.pathname;
     const isPublicPage = path.includes('index.html') || path === '/' || path === '';
     
     if (!user && !isPublicPage) {
-        window.location.href = 'index.html';
+        // إذا حاول المستخدم فتح صفحة داخلية بدون تسجيل دخول
+        window.location.replace('index.html');
+    } else if (user && isPublicPage) {
+        // إذا كان مسجل دخول وحاول الرجوع لصفحة تسجيل الدخول، نوجهه للوحته مباشرة
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) redirectByRole(userDoc.data().role);
     }
 });
+
+/* PROTECTION: BLOCK DEV TOOLS CONSOLE MESSAGES */
+console.log("%cتنبيه!", "color: red; font-size: 30px; font-weight: bold;");
+console.log("%cهذه المنطقة مخصصة للمطورين فقط. محاولة العبث هنا تعرض حسابك للحظر.", "font-size: 16px;");
