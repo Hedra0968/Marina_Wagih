@@ -4,19 +4,35 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>مدرسة مارينا وجيه - المنصة الذكية</title>
+  
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-</head>
-<body class="light-mode"> 
 
-  <div class="theme-toggle" onclick="toggleTheme()">
+  <style>
+    /* منع تحديد النصوص وحماية الصور */
+    body {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    img { pointer-events: none; -webkit-user-drag: none; }
+    
+    /* تنسيق خاص لتنبيه كلمة المرور */
+    .pw-hint { font-size: 0.75rem; color: #6c757d; margin-top: 5px; display: block; }
+    .dark-mode .pw-hint { color: #adb5bd; }
+  </style>
+</head>
+<body class="light-mode shadow-none"> 
+
+  <div class="theme-toggle" onclick="toggleTheme()" title="تبديل الوضع الليلي/النهاري">
     <i class="fas fa-moon" id="theme-icon"></i>
   </div>
 
   <div class="container text-center py-5">
-    <header class="mb-5">
+    <header class="mb-5 animate__animated animate__fadeInDown">
         <h1 class="display-4 fw-bold text-white shadow-text mb-2">مدرسة مارينا وجيه</h1>
         <p class="text-white-50 fs-5">نحو تعليم أذكى وآمن</p>
     </header>
@@ -24,39 +40,39 @@
     <div class="row g-4 justify-content-center">
       <div class="col-md-3 col-sm-6">
         <div class="card h-100 shadow border-0 clickable-card" onclick="triggerShowLogin('admin')">
-          <div class="card-body py-4">
-            <div class="icon-box bg-light-danger mb-3">
-                <i class="fas fa-user-shield fa-3x text-danger"></i>
+          <div class="card-body py-4 text-center">
+            <div class="icon-box bg-light-danger mb-3 mx-auto rounded-circle d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                <i class="fas fa-user-shield fa-2x text-danger"></i>
             </div>
             <h5 class="fw-bold">لوحة المديرة</h5>
-            <p class="small text-muted">إدارة المدرسة والصلاحيات</p>
-            <button class="btn btn-danger w-100 mt-2">دخول الإدارة</button>
+            <p class="small text-muted">إدارة المنظومة والتقارير</p>
+            <button class="btn btn-danger w-100 mt-2 rounded-pill shadow-sm">دخول الإدارة</button>
           </div>
         </div>
       </div>
 
       <div class="col-md-3 col-sm-6">
         <div class="card h-100 shadow border-0 clickable-card" onclick="triggerShowLogin('secretary')">
-          <div class="card-body py-4">
-            <div class="icon-box bg-light-success mb-3">
-                <i class="fas fa-user-tie fa-3x text-success"></i>
+          <div class="card-body py-4 text-center">
+            <div class="icon-box bg-light-success mb-3 mx-auto rounded-circle d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                <i class="fas fa-user-tie fa-2x text-success"></i>
             </div>
             <h5 class="fw-bold">لوحة السكرتير</h5>
             <p class="small text-muted">إدارة الطلاب والحضور</p>
-            <button class="btn btn-success w-100 mt-2">دخول السكرتارية</button>
+            <button class="btn btn-success w-100 mt-2 rounded-pill shadow-sm">دخول السكرتارية</button>
           </div>
         </div>
       </div>
 
       <div class="col-md-3 col-sm-6">
         <div class="card h-100 shadow border-0 clickable-card" onclick="triggerShowLogin('student')">
-          <div class="card-body py-4">
-            <div class="icon-box bg-light-primary mb-3">
-                <i class="fas fa-user-graduate fa-3x text-primary"></i>
+          <div class="card-body py-4 text-center">
+            <div class="icon-box bg-light-primary mb-3 mx-auto rounded-circle d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                <i class="fas fa-user-graduate fa-2x text-primary"></i>
             </div>
             <h5 class="fw-bold">لوحة الطالب</h5>
-            <p class="small text-muted">الدروس، الحضور، والكويزات</p>
-            <button class="btn btn-primary w-100 mt-2">دخول بوابة الطالب</button>
+            <p class="small text-muted">الدروس، الواجبات، والنتائج</p>
+            <button class="btn btn-primary w-100 mt-2 rounded-pill shadow-sm">دخول الطالب</button>
           </div>
         </div>
       </div>
@@ -70,8 +86,8 @@
 
     <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg">
-          <div class="modal-header bg-dark text-white border-0">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+          <div class="modal-header bg-dark text-white border-0 py-3">
             <h5 class="modal-title fw-bold"><i class="fas fa-lock me-2"></i> دخول <span id="displayRole"></span></h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
           </div>
@@ -79,18 +95,18 @@
             <form id="loginForm">
               <input type="hidden" id="userRole">
               <div class="mb-3">
-                <label class="form-label fw-bold small"><i class="fas fa-envelope me-1"></i> البريد الإلكتروني</label>
-                <input type="email" class="form-control bg-light" id="login-email" placeholder="example@mail.com" required>
+                <label class="form-label fw-bold small"><i class="fas fa-envelope me-1 text-primary"></i> البريد الإلكتروني</label>
+                <input type="email" class="form-control" id="login-email" placeholder="example@mail.com" required>
               </div>
               <div class="mb-3">
-                <label class="form-label fw-bold small"><i class="fas fa-key me-1"></i> كلمة المرور</label>
-                <input type="password" class="form-control bg-light" id="login-password" required>
+                <label class="form-label fw-bold small"><i class="fas fa-key me-1 text-primary"></i> كلمة المرور</label>
+                <input type="password" class="form-control" id="login-password" required>
               </div>
               <div class="mb-4">
                 <label class="form-label text-danger fw-bold small"><i class="fas fa-shield-alt me-1"></i> كود الأمان (8 رموز)</label>
-                <input type="text" class="form-control border-danger bg-light-danger text-center fw-bold" id="login-code" placeholder="أدخل كودك السري" required>
+                <input type="text" class="form-control border-danger bg-light-danger text-center fw-bold" id="login-code" placeholder="كودك السري المطبوع على الكارت" required>
               </div>
-              <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow">دخول النظام</button>
+              <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow rounded-3">تأكيد الدخول</button>
             </form>
           </div>
         </div>
@@ -99,43 +115,48 @@
 
     <div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow-lg">
-          <div class="modal-header bg-primary text-white border-0">
-            <h5 class="modal-title fw-bold"><i class="fas fa-id-card me-2"></i> فتح حساب جديد</h5>
+        <div class="modal-content border-0 shadow-lg rounded-4">
+          <div class="modal-header bg-primary text-white border-0 py-3">
+            <h5 class="modal-title fw-bold"><i class="fas fa-id-card me-2"></i> فتح حساب طالب/موظف جديد</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body p-4 text-start">
             <form id="registerForm">
               <div class="text-center mb-4">
                 <div class="position-relative d-inline-block">
-                  <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" id="register-photo-preview" class="rounded-circle border shadow-sm" width="100" height="100" style="object-fit: cover;">
-                  <button type="button" class="btn btn-sm btn-dark position-absolute bottom-0 end-0 rounded-circle" onclick="document.getElementById('reg-photo').click()">
+                  <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" id="register-photo-preview" class="rounded-circle border-4 border-white shadow" width="110" height="110" style="object-fit: cover; background: #eee;">
+                  <button type="button" class="btn btn-sm btn-dark position-absolute bottom-0 end-0 rounded-circle border-2 border-white" onclick="document.getElementById('reg-photo').click()">
                     <i class="fas fa-camera"></i>
                   </button>
                   <input type="file" id="reg-photo" class="d-none" accept="image/*" onchange="previewImage(event)">
                 </div>
-                <p class="small text-muted mt-2">اضغط لاختيار صورتك الشخصية</p>
+                <p class="small text-muted mt-2 fw-bold">اختر صورة شخصية رسمية</p>
               </div>
 
               <div class="row">
                 <div class="col-md-6 mb-3">
-                  <label class="form-label fw-bold small">الاسم الكامل</label>
-                  <input type="text" class="form-control bg-light" id="reg-name" placeholder="الاسم ثلاثي" required>
+                  <label class="form-label fw-bold small">الاسم الكامل (ثلاثي)</label>
+                  <input type="text" class="form-control" id="reg-name" placeholder="مثال: محمد أحمد علي" required>
                 </div>
                 <div class="col-md-6 mb-3">
                   <label class="form-label fw-bold small">البريد الإلكتروني</label>
-                  <input type="email" class="form-control bg-light" id="reg-email" placeholder="example@mail.com" required>
+                  <input type="email" class="form-control" id="reg-email" placeholder="example@mail.com" required>
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label class="form-label fw-bold small">كلمة المرور (8 رموز على الأقل)</label>
-                  <input type="password" class="form-control bg-light" id="reg-password" minlength="8" required>
+                  <label class="form-label fw-bold small">رقم الهاتف (واتساب)</label>
+                  <input type="tel" class="form-control" id="reg-phone" placeholder="01xxxxxxxxx" required>
                 </div>
                 <div class="col-md-6 mb-3">
+                  <label class="form-label fw-bold small">كلمة المرور المعقدة</label>
+                  <input type="password" class="form-control" id="reg-password" required>
+                  <span class="pw-hint text-danger fw-bold"><i class="fas fa-info-circle"></i> حرف كبير، حرف صغير، رقم، ورمز خاص (@#$..)</span>
+                </div>
+                <div class="col-md-12 mb-3">
                   <label class="form-label fw-bold small">نوع الحساب</label>
-                  <select class="form-select bg-light" id="reg-role" onchange="toggleRegFields(this.value)" required>
-                    <option value="" disabled selected>اختر النوع</option>
+                  <select class="form-select" id="reg-role" onchange="toggleRegFields(this.value)" required>
+                    <option value="" disabled selected>اختر الرتبة</option>
                     <option value="secretary">سكرتير / موظف</option>
-                    <option value="student">طالب</option>
+                    <option value="student">طالب / طالبة</option>
                   </select>
                 </div>
               </div>
@@ -143,16 +164,16 @@
               <div id="student-fields" style="display:none;" class="p-3 bg-light rounded-3 mb-3 border">
                 <div class="row">
                     <div class="col-md-6 mb-2">
-                        <label class="small fw-bold">المرحلة الدراسية</label>
-                        <input type="text" class="form-control" id="reg-stage" placeholder="مثل: أولى ثانوي">
+                        <label class="small fw-bold text-dark">المرحلة الدراسية</label>
+                        <input type="text" class="form-control" id="reg-stage" placeholder="مثال: الصف الثالث الثانوي">
                     </div>
                     <div class="col-md-6 mb-2">
-                        <label class="small fw-bold">المادة الأساسية</label>
-                        <input type="text" class="form-control" id="reg-subject" placeholder="اسم المادة">
+                        <label class="small fw-bold text-dark">المادة</label>
+                        <input type="text" class="form-control" id="reg-subject" placeholder="مثال: لغة إنجليزية">
                     </div>
                 </div>
               </div>
-              <button type="submit" class="btn btn-success w-100 py-3 fw-bold shadow mt-2">إنشاء الحساب وإصدار الكارت</button>
+              <button type="submit" class="btn btn-success w-100 py-3 fw-bold shadow-sm rounded-3 mt-2">تسجيل البيانات وإصدار هوية إلكترونية</button>
             </form>
           </div>
         </div>
@@ -165,48 +186,58 @@
                 <div class="student-card-digital shadow-lg mx-auto" id="digitalCardContent">
                     </div>
                 <div class="mt-4">
-                    <button class="btn btn-light rounded-pill px-5 fw-bold shadow" onclick="window.location.reload()">
-                        تم حفظ البيانات، ابدأ الدخول
+                    <button class="btn btn-light rounded-pill px-5 fw-bold shadow-lg animate__animated animate__pulse animate__infinite" onclick="window.location.reload()">
+                        حفظ ومتابعة للدخول <i class="fas fa-arrow-left ms-2"></i>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-  </div>
+    </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="js/app.js"></script>
+
   <script>
-    // معاينة الصورة المختارة
+    /* -------------------------------------------------------------------------
+       SHIELD PROTECTION: Prevent Inspect, Right Click, F12
+       Copyright: Marina Wagih & Hadra Victor
+       ------------------------------------------------------------------------- */
+    document.addEventListener('contextmenu', event => event.preventDefault()); // منع الكليك يمين
+    document.onkeydown = function(e) {
+        if (e.keyCode == 123) return false; // F12
+        if (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0))) return false; // Inspect
+        if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // View Source
+    };
+
+    /* معاينة الصورة */
     function previewImage(event) {
       const file = event.target.files[0];
       if (file) {
         const reader = new FileReader();
-        reader.onload = function(e) {
-          document.getElementById('register-photo-preview').src = e.target.result;
-        }
+        reader.onload = e => document.getElementById('register-photo-preview').src = e.target.result;
         reader.readAsDataURL(file);
       }
     }
 
-    // وظيفة تبديل السمات (Dark/Light)
+    /* تبديل الوضع الليلي */
     function toggleTheme() {
       const body = document.body;
       const icon = document.getElementById('theme-icon');
       if (body.classList.contains('light-mode')) {
         body.classList.replace('light-mode', 'dark-mode');
         icon.classList.replace('fa-moon', 'fa-sun');
-        localStorage.setItem('theme', 'dark');
+        localStorage.setItem('m-theme', 'dark');
       } else {
         body.classList.replace('dark-mode', 'light-mode');
         icon.classList.replace('fa-sun', 'fa-moon');
-        localStorage.setItem('theme', 'light');
+        localStorage.setItem('m-theme', 'light');
       }
     }
 
     window.onload = () => {
-      const savedTheme = localStorage.getItem('theme') || 'light';
+      const savedTheme = localStorage.getItem('m-theme') || 'light';
       if (savedTheme === 'dark') {
         document.body.classList.replace('light-mode', 'dark-mode');
         document.getElementById('theme-icon').classList.replace('fa-moon', 'fa-sun');
@@ -218,11 +249,8 @@
     }
 
     function triggerShowLogin(role) {
-        // تحديث النص والرتبة في المودال
         document.getElementById('displayRole').innerText = (role === 'admin' ? 'المديرة' : role === 'secretary' ? 'السكرتير' : 'الطالب');
         document.getElementById('userRole').value = role;
-        
-        // إظهار المودال يدوياً لضمان الربط
         var myModal = new bootstrap.Modal(document.getElementById('loginModal'));
         myModal.show();
     }
