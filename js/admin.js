@@ -1,6 +1,6 @@
 /* JS File: admin.js
     Rights: © 2026 Marina Wagih & Hadra Victor. All Rights Reserved.
-    Features: Live Stats, Point System, PDF Reports, Homework Grading.
+    Features: Live Stats, Point System, PDF Reports, Secretary Permissions.
 */
 
 import { db } from './firebase-config.js';
@@ -27,14 +27,15 @@ function watchStats() {
         if (pointsElem) pointsElem.innerText = totalPoints;
     });
 
-    onSnapshot(collection(db, "attendance"), (snapshot) => {
+    onSnapshot(collection(db, "attendanceRequests"), (snapshot) => {
         const today = new Date().toISOString().split('T')[0];
         const presentToday = snapshot.docs.filter(d => d.data().date === today && d.data().status === 'approved').length;
-        document.getElementById('stat-today-attendance').innerText = presentToday;
+        const statAttendance = document.getElementById('stat-today-attendance');
+        if (statAttendance) statAttendance.innerText = presentToday;
     });
 }
 
-// --- 2. إدارة المستخدمين (إضافة نظام النقاط والتقييم) ---
+// --- 2. إدارة المستخدمين (مع زر صلاحيات السكرتير) ---
 async function loadUsers() {
     const list = document.getElementById('users-list');
     onSnapshot(collection(db, "users"), (snapshot) => {
@@ -47,7 +48,6 @@ async function loadUsers() {
             li.className = 'list-group-item d-flex justify-content-between align-items-center p-3 mb-2 shadow-sm border-0 rounded-4 bg-white animate__animated animate__fadeIn';
             
             const userImg = user.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-            const statusColor = user.status === 'pending' ? 'text-warning' : 'text-success';
 
             li.innerHTML = `
                 <div class="d-flex align-items-center">
@@ -59,6 +59,13 @@ async function loadUsers() {
                     </div>
                 </div>
                 <div class="d-flex gap-1 flex-wrap justify-content-end">
+                    
+                    ${user.role === 'secretary' ? 
+                        `<button class="btn btn-sm ${user.canApproveAttendance ? 'btn-success' : 'btn-outline-secondary'} rounded-pill" 
+                            onclick="togglePermission('${userDoc.id}', ${user.canApproveAttendance})">
+                            <i class="fas fa-fingerprint"></i> الحضور
+                        </button>` : ''}
+
                     ${user.role === 'student' ? 
                         `<button class="btn btn-sm btn-warning rounded-pill text-dark fw-bold" onclick="awardPoints('${userDoc.id}', '${user.name}')">
                             <i class="fas fa-star"></i> تميز
@@ -77,7 +84,7 @@ async function loadUsers() {
     });
 }
 
-// --- 3. نظام منح نقاط التميز (Gamification) ---
+// --- 3. نظام منح نقاط التميز ---
 window.awardPoints = async (id, name) => {
     const { value: pts } = await Swal.fire({
         title: `تشجيع ${name}`,
@@ -95,28 +102,26 @@ window.awardPoints = async (id, name) => {
     }
 };
 
-// --- 4. مركز التقارير (PDF) - الربط البرمجي ---
-window.triggerExportWeeklyPDF = async () => {
-    Swal.fire({
-        title: 'جاري إعداد التقرير الأسبوعي',
-        text: 'يتم الآن تجميع بيانات الحضور والدرجات بصيغة PDF...',
-        icon: 'info',
-        timer: 2000,
-        showConfirmButton: false
-    });
-    // هنا يتم استدعاء مكتبة مثل jsPDF أو رابط الـ Backend المخصص للتقارير
-    console.log("Generating Weekly Report for Marina...");
+// --- 4. تبديل صلاحية السكرتير (الميزة المطلوبة) ---
+window.togglePermission = async (id, currentStatus) => {
+    try {
+        await updateDoc(doc(db, "users", id), { 
+            canApproveAttendance: !currentStatus 
+        });
+        Swal.fire({
+            icon: 'success',
+            title: currentStatus ? 'تم سحب الصلاحية' : 'تم منح الصلاحية',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000
+        });
+    } catch (e) {
+        Swal.fire('خطأ', 'فشل في تحديث الصلاحية', 'error');
+    }
 };
 
-window.triggerExportMonthlyPDF = async () => {
-    Swal.fire({
-        title: 'التقرير الشهري الشامل',
-        text: 'سيتم استخراج ملف PDF يوضح مستوى كل الطلاب هذا الشهر.',
-        icon: 'success'
-    });
-};
-
-// --- 5. نشر المذكرات والواجبات (دعم الـ PDF) ---
+// --- 5. نشر المذكرات والواجبات ---
 window.triggerUploadFile = async () => {
     const title = document.getElementById('file-title').value;
     const url = document.getElementById('file-url').value;
@@ -127,7 +132,7 @@ window.triggerUploadFile = async () => {
     await addDoc(collection(db, "files"), {
         title,
         url,
-        type, // homework or note
+        type, 
         createdAt: serverTimestamp()
     });
     
@@ -138,7 +143,11 @@ window.triggerUploadFile = async () => {
 
 // --- 6. العمليات الإدارية الأساسية ---
 window.activateUser = async (id) => {
-    await updateDoc(doc(db, "users", id), { status: 'active', points: 0 });
+    await updateDoc(doc(db, "users", id), { 
+        status: 'active', 
+        points: 0,
+        canApproveAttendance: false // يبدأ السكرتير بدون صلاحية حضور حتى تفعليها
+    });
     Swal.fire({ icon: 'success', title: 'تم التفعيل', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
 };
 
@@ -156,6 +165,10 @@ window.deleteUser = async (id, name) => {
         Swal.fire('حُذف', 'تم استبعاد المستخدم من المنظومة', 'success');
     }
 };
+
+// تشغيل التقارير (محاكاة)
+window.triggerExportWeeklyPDF = () => Swal.fire('التقارير', 'جاري تجهيز التقرير الأسبوعي للطباعة...', 'info');
+window.triggerExportMonthlyPDF = () => Swal.fire('التقارير', 'جاري استخراج بيانات الشهر الحالي...', 'info');
 
 // تشغيل المهام عند التحميل
 watchStats();
