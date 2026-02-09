@@ -1,12 +1,15 @@
 import { auth, db } from './firebase-config.js';
 import { logout } from './auth.js';
-import { collection, onSnapshot, updateDoc, doc, getDoc, addDoc, query, where } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js";
+import { 
+    collection, onSnapshot, updateDoc, doc, getDoc, 
+    addDoc, query, where, serverTimestamp 
+} from "https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js";
 import Swal from 'https://cdn.jsdelivr.net/npm/sweetalert2@11/+esm';
 
 // ربط الدوال بالنافذة العالمية
-window.triggerLogout = logout;
+window.handleLogout = logout;
 
-// --- 1. إضافة طالب جديد للمنظومة ---
+// --- 1. إضافة طالب جديد للمنظومة (يدوي) ---
 window.triggerAddStudent = async () => {
     const name = document.getElementById('student-name').value;
     const phone = document.getElementById('student-phone').value;
@@ -14,106 +17,132 @@ window.triggerAddStudent = async () => {
     const stage = document.getElementById('student-stage').value;
 
     if (!name || !phone) {
-        Swal.fire('تنبيه', 'يرجى إدخال اسم الطالب ورقم الهاتف على الأقل', 'warning');
-        return;
+        return Swal.fire('تنبيه', 'يرجى إدخال اسم الطالب ورقم الهاتف', 'warning');
     }
 
     try {
-        await addDoc(collection(db, "students_manual"), {
-            name, phone, subject, stage,
+        await addDoc(collection(db, "users"), {
+            name,
+            phone,
+            subject,
+            stage,
+            role: 'student',
+            status: 'active', // الإضافة اليدوية تكون نشطة فوراً
+            accessCode: Math.random().toString(36).substring(2, 7).toUpperCase(), // كود بسيط للمسجلين يدوياً
+            photoURL: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
             registeredBy: auth.currentUser.uid,
-            createdAt: new Date()
+            createdAt: serverTimestamp()
         });
-        Swal.fire('تم الإضافة', 'تم تسجيل بيانات الطالب بنجاح', 'success');
+
+        Swal.fire({ icon: 'success', title: 'تم تسجيل الطالب', timer: 1500, showConfirmButton: false });
+        
         // تفريغ الحقول
-        document.getElementById('student-name').value = '';
-        document.getElementById('student-phone').value = '';
+        ['student-name', 'student-phone', 'student-subject', 'student-stage'].forEach(id => document.getElementById(id).value = '');
+        
     } catch (e) {
-        Swal.fire('خطأ', 'فشل في إضافة الطالب: ' + e.message, 'error');
+        Swal.fire('خطأ', 'فشل في الإضافة: ' + e.message, 'error');
     }
 };
 
-// --- 2. تحميل قائمة الطلاب المسجلين ---
-function loadStudentsList() {
+// --- 2. تحميل قائمة الطلاب المسجلين اليوم ---
+function loadStudentsAndStats() {
     const list = document.getElementById('students-list');
-    if (!list) return;
+    const todayCountLabel = document.getElementById('sec-stat-today');
+    
+    // جلب كل الطلاب لترتيبهم
+    const q = query(collection(db, "users"), where("role", "==", "student"));
 
-    onSnapshot(collection(db, "students_manual"), (snapshot) => {
+    onSnapshot(q, (snapshot) => {
         list.innerHTML = '';
-        if (snapshot.empty) {
-            list.innerHTML = '<li class="list-group-item text-center text-muted">لا يوجد طلاب مسجلين يدويًا</li>';
-            return;
-        }
+        let todayCount = 0;
+        const todayStr = new Date().toDateString();
+
         snapshot.forEach(docSnap => {
             const data = docSnap.data();
+            
+            // حساب طلاب اليوم
+            if (data.createdAt && data.createdAt.toDate().toDateString() === todayStr) {
+                todayCount++;
+            }
+
             const li = document.createElement('li');
-            li.className = 'list-group-item d-flex justify-content-between align-items-center shadow-sm mb-2 rounded border-end border-success border-3';
+            li.className = 'list-group-item d-flex justify-content-between align-items-center p-3 border-0 border-bottom bg-transparent';
             li.innerHTML = `
-                <div>
-                    <strong class="text-dark">${data.name}</strong> <br>
-                    <small class="text-muted"><i class="fas fa-phone-alt small"></i> ${data.phone}</small>
+                <div class="d-flex align-items-center">
+                    <img src="${data.photoURL}" class="rounded-circle me-3 border" width="40" height="40" style="object-fit: cover;">
+                    <div>
+                        <h6 class="mb-0 fw-bold small text-dark">${data.name}</h6>
+                        <small class="text-muted" style="font-size: 11px;">${data.stage} - ${data.phone}</small>
+                    </div>
                 </div>
-                <span class="badge bg-light text-dark border">${data.stage || 'عام'}</span>
+                <span class="badge bg-light text-success border-success border rounded-pill">${data.subject}</span>
             `;
             list.appendChild(li);
         });
+        
+        if(todayCountLabel) todayCountLabel.innerText = todayCount;
     });
 }
 
-// --- 3. إدارة طلبات الحضور (بفحص الصلاحية) ---
+// --- 3. إدارة طلبات الحضور (بفحص صلاحية الدكتورة مارينا) ---
 window.approveRequest = async (requestId) => {
     try {
-        const userRef = doc(db, "users", auth.currentUser.uid);
-        const userSnap = await getDoc(userRef);
-        
-        if (userSnap.exists()) {
-            const userData = userSnap.data();
-            // فحص الصلاحية الممنوحة من المديرة
-            if (userData.role === 'secretary' && !userData.canApproveAttendance) {
-                Swal.fire({
-                    title: 'صلاحية مرفوضة',
-                    text: 'عذراً، دكتورة مارينا لم تمنحك صلاحية قبول الحضور بعد.',
-                    icon: 'error'
-                });
-                return;
-            }
+        const myProfile = await getDoc(doc(db, "users", auth.currentUser.uid));
+        const myData = myProfile.data();
 
-            await updateDoc(doc(db, "attendanceRequests", requestId), { 
-                status: 'approved',
-                approvedBy: userData.name,
-                approvedAt: new Date()
+        // فحص الأمان: هل مارينا سمحت للسكرتير بالتحضير؟
+        if (!myData.canApproveAttendance) {
+            return Swal.fire({
+                title: 'صلاحية غير كافية',
+                text: 'دكتورة مارينا لم تمنحك إذن قبول الحضور. يرجى مراجعتها.',
+                icon: 'lock'
             });
-            Swal.fire({ title: 'تم القبول', icon: 'success', timer: 1000, showConfirmButton: false });
         }
+
+        await updateDoc(doc(db, "attendanceRequests", requestId), { 
+            status: 'approved',
+            approvedBy: myData.name,
+            approvedAt: serverTimestamp()
+        });
+
+        Swal.fire({ icon: 'success', title: 'تم التحضير', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+        
     } catch (e) {
-        Swal.fire('خطأ', 'حدثت مشكلة: ' + e.message, 'error');
+        Swal.fire('خطأ', 'حدث خطأ: ' + e.message, 'error');
     }
 };
 
 function loadAttendanceRequests() {
     const list = document.getElementById('attendance-requests');
-    if (!list) return;
+    const badgeCount = document.getElementById('pending-count');
 
-    // جلب الطلبات المعلقة فقط
     const q = query(collection(db, "attendanceRequests"), where("status", "==", "pending"));
     
     onSnapshot(q, (snapshot) => {
         list.innerHTML = '';
+        badgeCount.innerText = `${snapshot.size} طلب`;
+
         if (snapshot.empty) {
-            list.innerHTML = '<li class="list-group-item text-center text-muted py-3">لا توجد طلبات معلقة</li>';
+            list.innerHTML = '<li class="list-group-item text-center text-muted py-4 border-0">لا توجد طلبات انتظار</li>';
             return;
         }
+
         snapshot.forEach(docSnap => {
             const req = docSnap.data();
             const li = document.createElement('li');
-            li.className = 'list-group-item d-flex justify-content-between align-items-center mb-2 border-start border-warning border-3 shadow-sm';
+            li.className = 'list-group-item d-flex justify-content-between align-items-center p-3 mb-2 rounded-4 bg-white border shadow-sm';
             li.innerHTML = `
-                <div>
-                    <span class="fw-bold text-dark">${req.studentName || 'طالب'}</span> <br>
-                    <small class="text-muted"><i class="far fa-calendar-alt"></i> ${req.date}</small>
+                <div class="d-flex align-items-center">
+                    <div class="bg-light-warning p-2 rounded-3 me-3 text-warning">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold small text-dark">${req.studentName}</h6>
+                        <small class="text-muted" style="font-size: 11px;">تاريخ الحصة: ${req.date}</small>
+                    </div>
                 </div>
-                <button class="btn btn-sm btn-success px-3 shadow-sm" onclick="approveRequest('${docSnap.id}')">
-                    <i class="fas fa-check"></i> قبول
+                <button class="btn btn-sm btn-success rounded-pill px-4 fw-bold" onclick="approveRequest('${docSnap.id}')">
+                    تفعيل
                 </button>
             `;
             list.appendChild(li);
@@ -121,8 +150,6 @@ function loadAttendanceRequests() {
     });
 }
 
-// تشغيل الدوال عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', () => {
-    loadStudentsList();
-    loadAttendanceRequests();
-});
+// تشغيل المهام فور التحميل
+loadStudentsAndStats();
+loadAttendanceRequests();
