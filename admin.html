@@ -15,6 +15,19 @@
     body { -webkit-user-select: none; user-select: none; }
     .custom-scroll { scrollbar-width: thin; scrollbar-color: #dc3545 #f8f9fa; }
     .badge-points { background: linear-gradient(45deg, #ffd700, #ffa500); color: #000; font-weight: bold; }
+    
+    /* تنسيق زر صلاحية السكرتير الجديد */
+    .btn-permission {
+        width: 38px;
+        height: 38px;
+        border-radius: 50% !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.3s;
+    }
+    .status-online { color: #28a745; font-size: 10px; }
+
     /* تحسين شكل التقرير */
     .report-card { border-right: 4px solid #dc3545 !important; transition: 0.3s; }
     .report-card:hover { transform: scale(1.02); }
@@ -145,7 +158,9 @@
           <div class="card-body p-0">
             <div class="p-4 bg-white border-bottom d-flex justify-content-between align-items-center">
                 <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-users-cog text-primary"></i> إدارة الطلاب والسكرتارية</h5>
-                <span class="badge bg-light text-dark border">نقاط التميز مفعلة ✅</span>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-light text-dark border">صلاحيات السكرتارية <i class="fas fa-fingerprint text-success ms-1"></i></span>
+                </div>
             </div>
             <div class="table-responsive custom-scroll" style="max-height: 400px;">
                 <ul id="users-list" class="list-group list-group-flush">
@@ -214,6 +229,11 @@
         localStorage.setItem('m-theme', isDark ? 'dark' : 'light');
         document.getElementById('theme-icon').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
     }
+    
+    // دالة لاستدعاء التبديل من الـ JS
+    window.togglePermission = (id, current) => {
+        if (window.handleTogglePermission) window.handleTogglePermission(id, current);
+    };
   </script>
 
   <script type="module" src="js/admin.js"></script>
