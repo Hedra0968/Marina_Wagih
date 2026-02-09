@@ -5,25 +5,37 @@ import {
   signOut, 
   onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-auth.js";
-import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js";
+import { doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js";
 import Swal from 'https://cdn.jsdelivr.net/npm/sweetalert2@11/+esm';
 
-// توليد كود دخول سري عشوائي
-const generateAccessCode = () => Math.random().toString(36).substring(2, 8).toUpperCase();
+// توليد كود دخول سري معقد (8 رموز)
+const generateAccessCode = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // استبعاد الحروف المتشابهة مثل O و 0
+    let code = "";
+    for (let i = 0; i < 8; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+};
 
-// تسجيل حساب جديد (ينزل بحالة معلق pending)
-export async function register(email, password, name, phone, stage, subject, role) {
+// تسجيل حساب جديد مع دعم الصورة الشخصية
+export async function register(email, password, name, photoURL, stage, subject, role) {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const accessCode = generateAccessCode();
         
         const userData = {
             uid: userCredential.user.uid,
-            name, email, phone, role, accessCode,
-            createdAt: new Date(),
-            status: 'pending' // ⚠️ الحساب معلق افتراضياً
+            name,
+            email,
+            role,
+            photoURL: photoURL || "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+            accessCode,
+            createdAt: serverTimestamp(),
+            status: 'pending' // الحساب معلق افتراضياً حتى تفعله مارينا
         };
 
+        // إضافة بيانات إضافية حسب الدور
         if (role === 'student') {
             userData.stage = stage;
             userData.subject = subject;
@@ -31,24 +43,24 @@ export async function register(email, password, name, phone, stage, subject, rol
             userData.canApproveAttendance = false;
         }
 
+        // حفظ البيانات في Firestore
         await setDoc(doc(db, "users", userCredential.user.uid), userData);
         
-        await Swal.fire({
-            title: 'تم تسجيل طلبك بنجاح!',
-            html: `كودك السري هو: <b style="color:red; font-size:24px;">${accessCode}</b><br><br>حسابك الآن <b>قيد المراجعة</b>. تواصل مع المديرة لتفعيل الحساب قبل محاولة الدخول.`,
-            icon: 'info',
-            confirmButtonText: 'فهمت'
-        });
-        
-        await signOut(auth); // طرده فوراً حتى لا يدخل قبل التفعيل
-        window.location.href = 'index.html';
+        // تسجيل الخروج فوراً لضمان عدم الدخول إلا بعد التفعيل
+        await signOut(auth);
+
+        // إرجاع البيانات لـ app.js لعرض الكارت
+        return { success: true, userData };
         
     } catch (error) {
-        Swal.fire('خطأ', 'حدث خطأ في التسجيل: ' + error.message, 'error');
+        let errorMsg = "حدث خطأ في التسجيل";
+        if (error.code === 'auth/email-already-in-use') errorMsg = "هذا البريد مسجل بالفعل!";
+        Swal.fire('خطأ', errorMsg, 'error');
+        throw error;
     }
 }
 
-// تسجيل الدخول مع فحص الحالة
+// تسجيل الدخول مع فحص "البوابة الصحيحة" والحالة
 export async function login(email, password, providedCode, selectedRole) {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -57,32 +69,40 @@ export async function login(email, password, providedCode, selectedRole) {
         if (userDoc.exists()) {
             const data = userDoc.data();
             
-            // 1. فحص التفعيل (المديرة مستثناة من الفحص لتتمكن من الدخول)
-            if (data.status === 'pending' && data.role !== 'admin') {
-                await signOut(auth);
-                Swal.fire('الحساب غير نشط', 'عذراً، لم يتم تفعيل حسابك من قبل المديرة بعد.', 'warning');
-                return;
-            }
-
-            // 2. فحص الكود السري
-            if (data.accessCode !== providedCode) {
-                await signOut(auth);
-                Swal.fire('خطأ', 'كود الدخول السري غير صحيح!', 'error');
-                return;
-            }
-
-            // 3. فحص الرتبة (الباب الصحيح)
+            // 1. فحص الرتبة (لازم يدخل من بوابته)
             if (data.role !== selectedRole) {
                 await signOut(auth);
-                Swal.fire('دخول مرفوض', `هذا الحساب غير مسجل كـ ${selectedRole}`, 'warning');
+                Swal.fire('دخول مرفوض', `هذا الحساب مسجل كـ (${data.role === 'student' ? 'طالب' : 'إدارة'}) وليس ${selectedRole === 'student' ? 'طالب' : 'إدارة'}`, 'warning');
                 return;
             }
 
-            Swal.fire({ title: 'نجاح', text: 'جاري تحويلك للوحة التحكم...', icon: 'success', timer: 1000, showConfirmButton: false });
-            setTimeout(() => redirectByRole(data.role), 1000);
+            // 2. فحص التفعيل (المديرة مارينا مستثناة)
+            if (data.status === 'pending' && data.role !== 'admin') {
+                await signOut(auth);
+                Swal.fire('الحساب معلق', 'يرجى التواصل مع المديرة لتفعيل حسابك أولاً.', 'info');
+                return;
+            }
+
+            // 3. فحص كود الأمان
+            if (data.accessCode !== providedCode.toUpperCase()) {
+                await signOut(auth);
+                Swal.fire('كود خاطئ', 'كود الأمان الذي أدخلته غير صحيح.', 'error');
+                return;
+            }
+
+            // نجاح الدخول
+            Swal.fire({ 
+                title: 'مرحباً بك', 
+                text: 'جاري فتح لوحة التحكم...', 
+                icon: 'success', 
+                timer: 1500, 
+                showConfirmButton: false 
+            });
+            
+            setTimeout(() => redirectByRole(data.role), 1500);
         }
     } catch (error) {
-        Swal.fire('خطأ', 'بيانات الدخول غير صحيحة', 'error');
+        Swal.fire('فشل الدخول', 'تأكد من البريد وكلمة المرور', 'error');
     }
 }
 
@@ -91,15 +111,20 @@ export function logout() {
 }
 
 export function redirectByRole(role) {
-    if (role === 'admin') window.location.href = 'admin.html';
-    else if (role === 'secretary') window.location.href = 'secretary.html';
-    else if (role === 'student') window.location.href = 'student.html';
-    else window.location.href = 'index.html';
+    const pages = {
+        'admin': 'admin.html',
+        'secretary': 'secretary.html',
+        'student': 'student.html'
+    };
+    window.location.href = pages[role] || 'index.html';
 }
 
+// مراقبة حالة الجلسة (الحماية)
 onAuthStateChanged(auth, (user) => {
     const path = window.location.pathname;
-    if (!user && !path.includes('index.html')) {
+    const isPublicPage = path.includes('index.html') || path === '/' || path === '';
+    
+    if (!user && !isPublicPage) {
         window.location.href = 'index.html';
     }
 });
