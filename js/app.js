@@ -1,3 +1,8 @@
+/* JS File: app.js
+    Rights: © 2026 Marina Wagih & Hadra Victor. All Rights Reserved.
+    Features: Advanced Auth Logic, Password Validator, Digital ID Generation.
+*/
+
 import { login, register } from './auth.js';
 import Swal from 'https://cdn.jsdelivr.net/npm/sweetalert2@11/+esm';
 
@@ -6,11 +11,15 @@ const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
 const idCardModal = new bootstrap.Modal(document.getElementById('idCardModal'));
 
 // --- 1. التعامل مع الصور الشخصية ---
-let selectedPhotoBase64 = "https://cdn-icons-png.flaticon.com/512/149/149071.png"; // صورة افتراضية
+let selectedPhotoBase64 = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
 window.previewImage = (event) => {
     const file = event.target.files[0];
     if (file) {
+        // التأكد من حجم الصورة (أقل من 2 ميجا لتوفير مساحة Firestore)
+        if (file.size > 2 * 1024 * 1024) {
+            return Swal.fire('حجم كبير', 'يرجى اختيار صورة أقل من 2 ميجابايت', 'warning');
+        }
         const reader = new FileReader();
         reader.onload = (e) => {
             selectedPhotoBase64 = e.target.result;
@@ -20,95 +29,137 @@ window.previewImage = (event) => {
     }
 };
 
-// --- 2. فتح نموذج تسجيل الدخول ---
+// --- 2. فتح نموذج تسجيل الدخول وتحديد الدور ---
 window.triggerShowLogin = (role) => {
     document.getElementById('userRole').value = role;
-    document.getElementById('displayRole').textContent = 
-        role === 'admin' ? 'المديرة' : role === 'secretary' ? 'السكرتير' : 'الطالب';
+    const roleMap = {
+        'admin': 'المديرة مارينا',
+        'secretary': 'المكتب الإداري',
+        'student': 'بوابة الطالب'
+    };
+    document.getElementById('displayRole').textContent = roleMap[role] || 'المستخدم';
     loginModal.show();
 };
 
 // --- 3. تنفيذ عملية الدخول ---
 document.getElementById('loginForm').addEventListener('submit', (e) => {
     e.preventDefault();
-    const email = document.getElementById('login-email').value;
+    const email = document.getElementById('login-email').value.trim();
     const pass = document.getElementById('login-password').value;
-    const code = document.getElementById('login-code').value;
+    const code = document.getElementById('login-code').value.trim();
     const selectedRole = document.getElementById('userRole').value;
 
     if(email && pass && code) {
         login(email, pass, code, selectedRole);
     } else {
-        Swal.fire('تنبيه', 'يرجى ملء كافة الحقول والكود السري', 'warning');
+        Swal.fire('بيانات ناقصة', 'يرجى إدخال البريد، كلمة المرور، والكود السري', 'warning');
     }
 });
 
-// --- 4. تنفيذ عملية التسجيل وإصدار الكارت ---
+// --- 4. فحص قوة كلمة المرور (Security Validator) ---
+function isPasswordStrong(password) {
+    // الشرط: 8 أحرف على الأقل، حرف كبير، حرف صغير، ورقم
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    return regex.test(password);
+}
+
+// --- 5. تنفيذ عملية التسجيل وإصدار الكارت ---
 document.getElementById('registerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const name = document.getElementById('reg-name').value;
-    const email = document.getElementById('reg-email').value;
+    const name = document.getElementById('reg-name').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
     const pass = document.getElementById('reg-password').value;
+    const phone = document.getElementById('reg-phone')?.value.trim() || "غير مسجل";
     const role = document.getElementById('reg-role').value;
     const stage = document.getElementById('reg-stage').value || 'غير محدد';
     const subject = document.getElementById('reg-subject').value || 'عام';
 
+    // التحقق من المدخلات الأساسية
     if(!role) return Swal.fire('تنبيه', 'يرجى اختيار نوع الحساب أولاً', 'warning');
+    
+    // التحقق من قوة كلمة المرور
+    if(!isPasswordStrong(pass)) {
+        return Swal.fire({
+            title: 'كلمة مرور ضعيفة',
+            html: '<ul class="text-start small"><li>يجب أن تكون 8 أحرف على الأقل</li><li>يجب أن تحتوي على حرف كبير (A-Z)</li><li>يجب أن تحتوي على رقم واحد على الأقل</li></ul>',
+            icon: 'error'
+        });
+    }
 
     Swal.fire({
-        title: 'جاري إنشاء الحساب...',
+        title: 'جاري إنشاء ملفك الرقمي...',
+        text: 'يتم الآن فحص البيانات وتوليد كود الدخول',
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
     });
 
     try {
-        // نرسل البيانات لـ Firebase (بما فيها الصورة)
-        const result = await register(email, pass, name, selectedPhotoBase64, stage, subject, role);
+        // نرسل البيانات لـ Firebase
+        // تم إضافة حقل phone للبيانات المرسلة
+        const result = await register(email, pass, name, selectedPhotoBase64, stage, subject, role, phone);
         
         if (result && result.success) {
             Swal.close();
-            showDigitalID(result.userData); // إظهار الكارت فوراً
+            showDigitalID(result.userData); // عرض الكارت الديجيتال فوراً
         }
     } catch (error) {
-        Swal.fire('فشل التسجيل', error.message, 'error');
+        // معالجة خطأ تكرار الإيميل أو أخطاء السيرفر
+        let errorMsg = "حدث خطأ أثناء التسجيل";
+        if (error.code === 'auth/email-already-in-use') errorMsg = "هذا البريد الإلكتروني مسجل بالفعل!";
+        Swal.fire('فشل التسجيل', errorMsg, 'error');
     }
 });
 
-// --- 5. وظيفة عرض الكارت الديجيتال الفخم ---
+// --- 6. وظيفة عرض الكارت الديجيتال (Protected UI) ---
 function showDigitalID(data) {
     const cardContent = document.getElementById('digitalCardContent');
-    const roleText = data.role === 'student' ? 'طالب ذكي' : 'سكرتير إداري';
+    const roleText = data.role === 'student' ? 'طالب متميز' : 'سكرتير إداري';
     
     cardContent.innerHTML = `
-        <div class="card-inner p-4 text-center">
-            <div class="mb-3">
+        <div class="card-inner p-4 text-center animate__animated animate__zoomIn">
+            <div class="position-relative d-inline-block mb-3">
                 <img src="${data.photoURL || selectedPhotoBase64}" class="card-user-img border border-3 border-white shadow">
+                <span class="position-absolute bottom-0 end-0 badge rounded-pill bg-warning text-dark border">New</span>
             </div>
-            <h3 class="fw-bold mb-1">${data.name}</h3>
-            <p class="badge bg-white text-dark mb-3 px-3 rounded-pill">${roleText}</p>
+            <h3 class="fw-bold mb-1 text-white">${data.name}</h3>
+            <p class="badge bg-white text-dark mb-3 px-3 rounded-pill shadow-sm">${roleText}</p>
             
-            <div class="bg-white text-dark rounded-4 p-3 shadow-sm mb-3">
-                <p class="small text-muted mb-1">كود الدخول السري (احفظه جيداً)</p>
-                <h2 class="fw-bold text-danger mb-0" style="letter-spacing: 5px;">${data.accessCode}</h2>
-            </div>
-            
-            <div class="row g-2 text-start small">
-                <div class="col-6"><b>المرحلة:</b> ${data.stage || '---'}</div>
-                <div class="col-6"><b>المادة:</b> ${data.subject || '---'}</div>
+            <div class="bg-white text-dark rounded-4 p-3 shadow-sm mb-3 border-start border-danger border-5">
+                <p class="small text-muted mb-1 fw-bold">كود الدخول السري الخاص بك</p>
+                <h2 class="fw-bold text-danger mb-0" style="letter-spacing: 5px; font-family: monospace;">${data.accessCode}</h2>
+                <small class="text-muted" style="font-size:9px;">يرجى تصوير الشاشة (Screenshot) لحفظ الكود</small>
             </div>
             
-            <hr class="opacity-25">
-            <p class="x-small text-white-50">نظام مدرسة مارينا وجيه الذكي 2026</p>
+            <div class="row g-2 text-start small text-white">
+                <div class="col-6"><i class="fas fa-layer-group me-1"></i> <b>المرحلة:</b> ${data.stage}</div>
+                <div class="col-6"><i class="fas fa-book me-1"></i> <b>المادة:</b> ${data.subject}</div>
+                <div class="col-12 mt-2"><i class="fas fa-phone-alt me-1"></i> <b>الهاتف:</b> ${data.phone || '---'}</div>
+            </div>
+            
+            <hr class="opacity-25 bg-white">
+            <p class="small text-white-50">نظام مارينا وجيه & هدرا فيكتور 2026</p>
         </div>
     `;
     
-    // إخفاء مودال التسجيل وإظهار الكارت
-    bootstrap.Modal.getInstance(document.getElementById('registerModal')).hide();
+    // إغلاق مودال التسجيل وفتح الكارت
+    const regModal = bootstrap.Modal.getInstance(document.getElementById('registerModal'));
+    if(regModal) regModal.hide();
     idCardModal.show();
 }
 
-// تبديل الحقول بناءً على الدور
+// تبديل الحقول بناءً على نوع المستخدم
 window.toggleRegFields = (role) => {
-    document.getElementById('student-fields').style.display = (role === 'student') ? 'block' : 'none';
+    const studentFields = document.getElementById('student-fields');
+    if(studentFields) {
+        studentFields.style.display = (role === 'student') ? 'block' : 'none';
+        // إضافة أنيميشن بسيط عند التبديل
+        studentFields.classList.add('animate__animated', 'animate__fadeIn');
+    }
 };
+
+/* SHIELD PROTECTION: PREVENT CONSOLE ACCESS */
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) e.preventDefault();
+    if (e.key === 'F12') e.preventDefault();
+});
