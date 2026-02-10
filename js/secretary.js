@@ -1,6 +1,6 @@
 /* JS File: secretary.js
+    Integrated Version: Student Registration & Attendance Approval
     Rights: © 2026 Marina Wagih & Hadra Victor. All Rights Reserved.
-    Core: Student Registration & Attendance Approval System (Advanced)
 */
 
 import { auth, db } from './firebase-config.js';
@@ -14,8 +14,9 @@ import Swal from 'https://cdn.jsdelivr.net/npm/sweetalert2@11/+esm';
 // ربط الدوال بالنافذة العالمية
 window.handleLogout = logout;
 
-// --- 1. توليد كود دخول سري (نظام الحماية الموحد) ---
+// --- 1. توليد كود دخول سري آمن (لضمان توافق تسجيل السكرتارية مع النظام العام) ---
 const generateSecureCode = () => {
+    // استبعاد الحروف المتشابهة (I, L, 1, O, 0) لضمان دقة القراءة
     const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; 
     let code = "";
     for (let i = 0; i < 8; i++) {
@@ -24,7 +25,7 @@ const generateSecureCode = () => {
     return code;
 };
 
-// --- 2. إضافة طالب جديد للمنظومة (يدوي) ---
+// --- 2. إضافة طالب جديد للمنظومة (يدوي عبر السكرتير) ---
 window.triggerAddStudent = async () => {
     const name = document.getElementById('student-name').value.trim();
     const phone = document.getElementById('student-phone').value.trim();
@@ -36,23 +37,17 @@ window.triggerAddStudent = async () => {
     }
 
     try {
-        Swal.fire({ 
-            title: 'جاري تسجيل الطالب...', 
-            text: 'يتم الآن إصدار كود الدخول السري',
-            allowOutsideClick: false, 
-            didOpen: () => Swal.showLoading() 
-        });
+        Swal.fire({ title: 'جاري الحفظ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
         const accessCode = generateSecureCode();
         
-        // إضافة الطالب كمستخدم نشط فوراً لأن السكرتير هو من أضافه
         await addDoc(collection(db, "users"), {
             name,
             phone,
             subject,
             stage,
             role: 'student',
-            status: 'active', 
+            status: 'active', // الإضافة اليدوية تكون مفعلة تلقائياً
             accessCode: accessCode,
             points: 0,
             photoURL: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
@@ -63,33 +58,27 @@ window.triggerAddStudent = async () => {
         Swal.fire({
             icon: 'success',
             title: 'تم تسجيل الطالب بنجاح',
-            html: `
-                <div class="security-display-box mt-3" style="background:#f8f9fa; border:2px dashed #0d6efd; padding:20px; border-radius:15px;">
-                    <p class="mb-1 small text-muted">كود الدخول السري للطالب:</p>
-                    <h2 class="text-primary fw-bold" style="letter-spacing:5px;">${accessCode}</h2>
-                    <hr>
-                    <small class="text-danger">يرجى تسليم هذا الكود للطالب ليتمكن من الدخول.</small>
-                </div>
-            `,
-            confirmButtonText: 'تم، إرسال الكود للطالب'
+            html: `كود الدخول الخاص بالطالب هو: <br><b class="text-danger" style="font-size:24px; letter-spacing: 3px;">${accessCode}</b>`,
+            confirmButtonText: 'تم الحفظ'
         });
         
-        // تفريغ الحقول
+        // تفريغ الحقول بعد النجاح
         ['student-name', 'student-phone', 'student-subject', 'student-stage'].forEach(id => {
-            if(document.getElementById(id)) document.getElementById(id).value = '';
+            const el = document.getElementById(id);
+            if(el) el.value = '';
         });
         
     } catch (e) {
-        Swal.fire('خطأ في الاتصال', 'فشل في حفظ البيانات: ' + e.message, 'error');
+        Swal.fire('خطأ', 'فشل في الإضافة: ' + e.message, 'error');
     }
 };
 
-// --- 3. تحميل قائمة الطلاب المسجلين اليوم ---
+// --- 3. تحميل قائمة الطلاب المسجلين اليوم (مزامنة لحظية) ---
 function loadStudentsAndStats() {
     const list = document.getElementById('students-list');
     const todayCountLabel = document.getElementById('sec-stat-today');
     
-    // جلب الطلاب المرتبطين بالمادة أو المرحلة (حسب حاجة السكرتير)
+    // جلب الطلاب المرتبين بالأحدث أولاً لسهولة متابعة آخر المسجلين
     const q = query(collection(db, "users"), where("role", "==", "student"), orderBy("createdAt", "desc"));
 
     onSnapshot(q, (snapshot) => {
@@ -100,7 +89,8 @@ function loadStudentsAndStats() {
 
         snapshot.forEach(docSnap => {
             const data = docSnap.data();
-            // حساب طلاب اليوم فقط للإحصائية
+            
+            // حساب إحصائية طلاب اليوم
             if (data.createdAt && data.createdAt.toDate().toDateString() === todayStr) {
                 todayCount++;
             }
@@ -116,29 +106,34 @@ function loadStudentsAndStats() {
                     </div>
                 </div>
                 <div class="text-end">
-                    <span class="badge bg-primary-subtle text-primary border rounded-pill px-3" style="font-size:10px;">${data.subject}</span><br>
+                    <span class="badge bg-light text-primary border rounded-pill px-3">${data.subject}</span><br>
                     <small class="text-danger fw-bold" style="font-size:9px;">Code: ${data.accessCode}</small>
                 </div>
             `;
             list.appendChild(li);
         });
         
-        if(todayCountLabel) todayCountLabel.innerText = todayCount;
+        if(todayCountLabel) {
+            todayCountLabel.innerText = todayCount;
+            todayCountLabel.classList.add('animate__bounceIn');
+            setTimeout(() => todayCountLabel.classList.remove('animate__bounceIn'), 1000);
+        }
     });
 }
 
-// --- 4. إدارة طلبات الحضور (مع فحص الصلاحية الصارم) ---
+// --- 4. إدارة طلبات الحضور (بصلاحيات دكتورة مارينا) ---
 window.approveRequest = async (requestId) => {
     try {
         const myProfile = await getDoc(doc(db, "users", auth.currentUser.uid));
         const myData = myProfile.data();
 
-        // فحص الصلاحية: هل المديرة مارينا سمحت لهذا السكرتير؟
+        // فحص الأمان: هل مارينا سمحت للسكرتير بالتحضير من لوحة الـ Admin؟
         if (!myData.canApproveAttendance) {
             return Swal.fire({
-                title: 'صلاحية محدودة',
-                text: 'عذراً، لا تملك صلاحية تفعيل الحضور حالياً. يرجى مراجعة الدكتورة مارينا.',
-                icon: 'lock'
+                title: 'صلاحية مغلقة',
+                text: 'عذراً، دكتورة مارينا لم تمنحك إذن قبول الحضور. يرجى مراجعتها لتفعيل الصلاحية.',
+                icon: 'lock',
+                confirmButtonColor: '#d33'
             });
         }
 
@@ -148,10 +143,17 @@ window.approveRequest = async (requestId) => {
             approvedAt: serverTimestamp()
         });
 
-        Swal.fire({ icon: 'success', title: 'تم التفعيل', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+        Swal.fire({ 
+            icon: 'success', 
+            title: 'تم تفعيل الحضور', 
+            toast: true, 
+            position: 'top-end', 
+            showConfirmButton: false, 
+            timer: 2000 
+        });
         
     } catch (e) {
-        Swal.fire('خطأ', 'تعذر تفعيل الطلب: ' + e.message, 'error');
+        Swal.fire('خطأ', 'حدث خطأ أثناء التحديث: ' + e.message, 'error');
     }
 };
 
@@ -159,34 +161,34 @@ function loadAttendanceRequests() {
     const list = document.getElementById('attendance-requests');
     const badgeCount = document.getElementById('pending-count');
 
+    // جلب الطلبات المعلقة مرتبة من الأقدم للأحدث (بالدور)
     const q = query(collection(db, "attendanceRequests"), where("status", "==", "pending"), orderBy("timestamp", "asc"));
     
     onSnapshot(q, (snapshot) => {
         if (!list) return;
         list.innerHTML = '';
-        if(badgeCount) badgeCount.innerText = `${snapshot.size} طلب انتظار`;
+        badgeCount.innerText = `${snapshot.size} طلب معلق`;
 
         if (snapshot.empty) {
-            list.innerHTML = `
-                <div class="text-center py-5">
-                    <i class="fas fa-check-circle text-success mb-2" style="font-size:30px;"></i>
-                    <p class="text-muted small">كل الطلبات مكتملة</p>
-                </div>`;
+            list.innerHTML = '<li class="list-group-item text-center text-muted py-5 border-0 animate__animated animate__fadeIn">لا توجد طلبات انتظار حالياً</li>';
             return;
         }
 
         snapshot.forEach(docSnap => {
             const req = docSnap.data();
             const li = document.createElement('li');
-            li.className = 'list-group-item d-flex justify-content-between align-items-center p-3 mb-2 rounded-4 bg-white border-start border-primary border-4 shadow-sm animate__animated animate__slideInLeft';
+            li.className = 'list-group-item d-flex justify-content-between align-items-center p-3 mb-2 rounded-4 bg-white border-start border-warning border-4 shadow-sm animate__animated animate__slideInLeft';
             li.innerHTML = `
                 <div class="d-flex align-items-center">
+                    <div class="bg-light-warning p-2 rounded-circle me-3 text-warning">
+                        <i class="fas fa-user-check"></i>
+                    </div>
                     <div>
                         <h6 class="mb-0 fw-bold small text-dark">${req.studentName}</h6>
-                        <small class="text-muted" style="font-size: 10px;"><i class="far fa-calendar-alt me-1"></i> ${req.date}</small>
+                        <small class="text-muted" style="font-size: 11px;">تاريخ الحصة: ${req.date}</small>
                     </div>
                 </div>
-                <button class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-sm" onclick="approveRequest('${docSnap.id}')">
+                <button class="btn btn-sm btn-success rounded-pill px-4 fw-bold shadow-sm" onclick="approveRequest('${docSnap.id}')">
                     تفعيل
                 </button>
             `;
@@ -195,9 +197,9 @@ function loadAttendanceRequests() {
     });
 }
 
-// حماية الصفحة
+// --- 5. حماية البيانات (منع التفتيش) ---
 document.addEventListener('contextmenu', e => e.preventDefault());
 
-// التشغيل الابتدائي
+// تشغيل المهام فور التحميل
 loadStudentsAndStats();
 loadAttendanceRequests();
