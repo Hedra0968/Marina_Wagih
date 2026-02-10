@@ -8,33 +8,227 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-  <style>
-    /* الإضافة: حماية الصور ومنع تحديد النصوص */
-    body {
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-    }
-    img { pointer-events: none; -webkit-user-drag: none; }
-    
-    /* الإضافة: تنسيق تنبيه كلمة المرور */
-    .pw-hint { font-size: 0.75rem; color: #6c757d; margin-top: 5px; display: block; }
-    .dark-mode .pw-hint { color: #adb5bd; }
-    
-    /* الإضافة: تحسين شكل أيقونات الأقسام */
-    .icon-box {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-  </style>
 </head>
+<body class="light-mode"> 
+
+  <div class="theme-toggle" onclick="toggleTheme()">
+    <i class="fas fa-moon" id="theme-icon"></i>
+  </div>
+
+  <div class="container text-center py-5">
+    <header class="mb-5">
+        <h1 class="display-4 fw-bold text-white shadow-text mb-2">مدرسة مارينا وجيه</h1>
+        <p class="text-white-50 fs-5">نحو تعليم أذكى وآمن</p>
+    </header>
+    
+    <div class="row g-4 justify-content-center">
+      <div class="col-md-3 col-sm-6">
+        <div class="card h-100 shadow border-0 clickable-card" onclick="triggerShowLogin('admin')">
+          <div class="card-body py-4">
+            <div class="icon-box bg-light-danger mb-3">
+                <i class="fas fa-user-shield fa-3x text-danger"></i>
+            </div>
+            <h5 class="fw-bold">لوحة المديرة</h5>
+            <p class="small text-muted">إدارة المدرسة والصلاحيات</p>
+            <button class="btn btn-danger w-100 mt-2">دخول الإدارة</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <div class="card h-100 shadow border-0 clickable-card" onclick="triggerShowLogin('secretary')">
+          <div class="card-body py-4">
+            <div class="icon-box bg-light-success mb-3">
+                <i class="fas fa-user-tie fa-3x text-success"></i>
+            </div>
+            <h5 class="fw-bold">لوحة السكرتير</h5>
+            <p class="small text-muted">إدارة الطلاب والحضور</p>
+            <button class="btn btn-success w-100 mt-2">دخول السكرتارية</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <div class="card h-100 shadow border-0 clickable-card" onclick="triggerShowLogin('student')">
+          <div class="card-body py-4">
+            <div class="icon-box bg-light-primary mb-3">
+                <i class="fas fa-user-graduate fa-3x text-primary"></i>
+            </div>
+            <h5 class="fw-bold">لوحة الطالب</h5>
+            <p class="small text-muted">الدروس، الحضور، والكويزات</p>
+            <button class="btn btn-primary w-100 mt-2">دخول بوابة الطالب</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-5">
+      <button class="btn btn-outline-light btn-lg shadow-sm px-5 rounded-pill" data-bs-toggle="modal" data-bs-target="#registerModal">
+        <i class="fas fa-user-plus me-2"></i> إنشاء حساب جديد
+      </button>
+    </div>
+
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header bg-dark text-white border-0">
+            <h5 class="modal-title fw-bold"><i class="fas fa-lock me-2"></i> دخول <span id="displayRole"></span></h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-4 text-start">
+            <form id="loginForm">
+              <input type="hidden" id="userRole">
+              <div class="mb-3">
+                <label class="form-label fw-bold small"><i class="fas fa-envelope me-1"></i> البريد الإلكتروني</label>
+                <input type="email" class="form-control bg-light" id="login-email" placeholder="example@mail.com" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-bold small"><i class="fas fa-key me-1"></i> كلمة المرور</label>
+                <input type="password" class="form-control bg-light" id="login-password" required>
+              </div>
+              <div class="mb-4">
+                <label class="form-label text-danger fw-bold small"><i class="fas fa-shield-alt me-1"></i> كود الأمان (8 رموز)</label>
+                <input type="text" class="form-control border-danger bg-light-danger text-center fw-bold" id="login-code" placeholder="أدخل كودك السري" required>
+              </div>
+              <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow">دخول النظام</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header bg-primary text-white border-0">
+            <h5 class="modal-title fw-bold"><i class="fas fa-id-card me-2"></i> فتح حساب جديد</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-4 text-start">
+            <form id="registerForm">
+              <div class="text-center mb-4">
+                <div class="position-relative d-inline-block">
+                  <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" id="register-photo-preview" class="rounded-circle border shadow-sm" width="100" height="100" style="object-fit: cover;">
+                  <button type="button" class="btn btn-sm btn-dark position-absolute bottom-0 end-0 rounded-circle" onclick="document.getElementById('reg-photo').click()">
+                    <i class="fas fa-camera"></i>
+                  </button>
+                  <input type="file" id="reg-photo" class="d-none" accept="image/*" onchange="previewImage(event)">
+                </div>
+                <p class="small text-muted mt-2">اضغط لاختيار صورتك الشخصية</p>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label fw-bold small">الاسم الكامل</label>
+                  <input type="text" class="form-control bg-light" id="reg-name" placeholder="الاسم ثلاثي" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label fw-bold small">البريد الإلكتروني</label>
+                  <input type="email" class="form-control bg-light" id="reg-email" placeholder="example@mail.com" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label fw-bold small">كلمة المرور (8 رموز على الأقل)</label>
+                  <input type="password" class="form-control bg-light" id="reg-password" minlength="8" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label fw-bold small">نوع الحساب</label>
+                  <select class="form-select bg-light" id="reg-role" onchange="toggleRegFields(this.value)" required>
+                    <option value="" disabled selected>اختر النوع</option>
+                    <option value="secretary">سكرتير / موظف</option>
+                    <option value="student">طالب</option>
+                  </select>
+                </div>
+              </div>
+
+              <div id="student-fields" style="display:none;" class="p-3 bg-light rounded-3 mb-3 border">
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <label class="small fw-bold">المرحلة الدراسية</label>
+                        <input type="text" class="form-control" id="reg-stage" placeholder="مثل: أولى ثانوي">
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <label class="small fw-bold">المادة الأساسية</label>
+                        <input type="text" class="form-control" id="reg-subject" placeholder="اسم المادة">
+                    </div>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-success w-100 py-3 fw-bold shadow mt-2">إنشاء الحساب وإصدار الكارت</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="idCardModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-transparent border-0 text-center">
+                <div class="student-card-digital shadow-lg mx-auto" id="digitalCardContent">
+                    </div>
+                <div class="mt-4">
+                    <button class="btn btn-light rounded-pill px-5 fw-bold shadow" onclick="window.location.reload()">
+                        تم حفظ البيانات، ابدأ الدخول
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="js/app.js"></script>
+  <script>
+    // معاينة الصورة المختارة
+    function previewImage(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('register-photo-preview').src = e.target.result;
+        }
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // وظيفة تبديل السمات (Dark/Light)
+    function toggleTheme() {
+      const body = document.body;
+      const icon = document.getElementById('theme-icon');
+      if (body.classList.contains('light-mode')) {
+        body.classList.replace('light-mode', 'dark-mode');
+        icon.classList.replace('fa-moon', 'fa-sun');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        body.classList.replace('dark-mode', 'light-mode');
+        icon.classList.replace('fa-sun', 'fa-moon');
+        localStorage.setItem('theme', 'light');
+      }
+    }
+
+    window.onload = () => {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      if (savedTheme === 'dark') {
+        document.body.classList.replace('light-mode', 'dark-mode');
+        document.getElementById('theme-icon').classList.replace('fa-moon', 'fa-sun');
+      }
+    };
+
+    function toggleRegFields(role) {
+      document.getElementById('student-fields').style.display = (role === 'student') ? 'block' : 'none';
+    }
+
+    function triggerShowLogin(role) {
+        // تحديث النص والرتبة في المودال
+        document.getElementById('displayRole').innerText = (role === 'admin' ? 'المديرة' : role === 'secretary' ? 'السكرتير' : 'الطالب');
+        document.getElementById('userRole').value = role;
+        
+        // إظهار المودال يدوياً لضمان الربط
+        var myModal = new bootstrap.Modal(document.getElementById('loginModal'));
+        myModal.show();
+    }
+  </script>
+</body>
+</html></head>
 <body class="light-mode"> 
 
   <div class="theme-toggle" onclick="toggleTheme()" title="تبديل الوضع الليلي/النهاري">
@@ -502,4 +696,5 @@
   </script>
 </body>
 </html>
+
 
