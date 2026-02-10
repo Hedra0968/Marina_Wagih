@@ -1,8 +1,4 @@
-/* JS File: student.js
-    Integrated Version: Attendance, Points, HW Upload & Resources
-    Rights: © 2026 Marina Wagih & Hadra Victor. All Rights Reserved.
-*/
-Import { auth, db } from './firebase-config.js';
+import { auth, db } from './firebase-config.js';
 import { logout } from './auth.js';
 import { 
     collection, addDoc, query, where, onSnapshot, getDoc, doc, orderBy 
