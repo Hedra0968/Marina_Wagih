@@ -1,8 +1,4 @@
-/* JS File: app.js
-    Integrated Version: Base Logic + Advanced Security + Digital ID
-    Rights: © 2026 Marina Wagih & Hadra Victor. All Rights Reserved.
-*/
-Import { login, register } from './auth.js';
+import { login, register } from './auth.js';
 import Swal from 'https://cdn.jsdelivr.net/npm/sweetalert2@11/+esm';
 
 // تعريف المودالات
