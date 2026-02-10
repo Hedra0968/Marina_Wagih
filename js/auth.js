@@ -1,8 +1,4 @@
-/* JS File: auth.js
-    Rights: © 2026 Marina Wagih & Hadra Victor. All Rights Reserved.
-    Core: Firebase Authentication & Security Logic (Integrated Version)
-*/
-Import { auth, db } from './firebase-config.js';
+import { auth, db } from './firebase-config.js';
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
