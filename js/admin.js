@@ -1,8 +1,4 @@
-/* JS File: admin.js 
-    Integrated Version: Base Features + Points System + PDF Reports
-    Rights: © 2026 Marina Wagih & Hadra Victor. All Rights Reserved.
-*/
-Import { db } from './firebase-config.js';
+import { db } from './firebase-config.js';
 import { logout } from './auth.js';
 import { collection, updateDoc, doc, onSnapshot, addDoc, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js";
 import Swal from 'https://cdn.jsdelivr.net/npm/sweetalert2@11/+esm';
