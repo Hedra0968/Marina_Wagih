@@ -8,40 +8,22 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  
-  <style>
-    /* الإضافة: درع الحماية البصري ومنع التحديد */
-    body { -webkit-user-select: none; user-select: none; }
-    .custom-scroll { scrollbar-width: thin; scrollbar-color: #dc3545 #f8f9fa; }
-    /* الإضافة: تنسيق كروت التقارير والواجبات */
-    .report-card-top { border-right: 4px solid #dc3545 !important; }
-  </style>
 </head>
 <body class="bg-light">
   
   <header class="py-3 mb-4 shadow-sm text-center bg-danger text-white main-header position-relative">
-    <div class="container d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center gap-3">
-            <div class="admin-profile-img-container">
-                <img src="https://cdn-icons-png.flaticon.com/512/6833/6833605.png" id="admin-photo" class="rounded-circle border border-white border-3 shadow-sm" width="60" height="60" style="object-fit: cover;">
-            </div>
-            <h3 class="mb-0 fw-bold d-none d-md-block"><i class="fas fa-user-shield me-2"></i> لوحة تحكم المديرة مارينا</h3>
+    <div class="container d-flex justify-content-center align-items-center gap-3">
+        <div class="admin-profile-img-container">
+            <img src="https://cdn-icons-png.flaticon.com/512/6833/6833605.png" id="admin-photo" class="rounded-circle border border-white border-3 shadow-sm" width="60" height="60" style="object-fit: cover;">
         </div>
-        <div class="d-flex gap-2">
-             <button class="btn btn-sm btn-outline-light rounded-pill px-3 fw-bold" onclick="toggleTheme()">
-                <i class="fas fa-moon" id="theme-icon"></i>
-             </button>
-             <button class="btn btn-sm btn-light rounded-pill px-3 fw-bold shadow-sm" onclick="handleLogout()">
-                <i class="fas fa-sign-out-alt"></i> خروج
-             </button>
-        </div>
+        <h3 class="mb-0 fw-bold"><i class="fas fa-user-shield me-2"></i> لوحة تحكم المديرة مارينا</h3>
     </div>
   </header>
 
   <div class="container">
     <div class="row g-3 mb-4 text-center">
         <div class="col-md-3 col-6">
-            <div class="card stat-card border-0 shadow-sm bg-primary text-white h-100 p-2 rounded-4">
+            <div class="card stat-card border-0 shadow-sm bg-primary text-white h-100 p-2">
                 <div class="card-body">
                     <i class="fas fa-user-graduate mb-2 fa-2x opacity-50"></i>
                     <h6 class="small fw-bold">إجمالي الطلاب</h6>
@@ -50,7 +32,7 @@
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="card stat-card border-0 shadow-sm bg-success text-white h-100 p-2 rounded-4">
+            <div class="card stat-card border-0 shadow-sm bg-success text-white h-100 p-2">
                 <div class="card-body">
                     <i class="fas fa-check-double mb-2 fa-2x opacity-50"></i>
                     <h6 class="small fw-bold">حاضرون اليوم</h6>
@@ -59,7 +41,7 @@
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="card stat-card border-0 shadow-sm bg-warning text-dark h-100 p-2 rounded-4">
+            <div class="card stat-card border-0 shadow-sm bg-warning text-dark h-100 p-2">
                 <div class="card-body">
                     <i class="fas fa-user-plus mb-2 fa-2x opacity-50"></i>
                     <h6 class="small fw-bold">بانتظار التفعيل</h6>
@@ -68,74 +50,55 @@
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="card stat-card border-0 shadow-sm bg-info text-white h-100 p-2 rounded-4">
+            <div class="card stat-card border-0 shadow-sm bg-info text-white h-100 p-2">
                 <div class="card-body">
-                    <i class="fas fa-star mb-2 fa-2x opacity-50"></i>
-                    <h6 class="small fw-bold">إجمالي النقاط</h6>
-                    <h3 id="stat-total-points" class="fw-bold">0</h3>
+                    <i class="fas fa-file-alt mb-2 fa-2x opacity-50"></i>
+                    <h6 class="small fw-bold">اختبارات منشورة</h6>
+                    <h3 id="stat-active-quizzes" class="fw-bold">0</h3>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow-sm border-0 rounded-4 bg-white p-3 report-card-top">
-                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                    <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-chart-line text-danger"></i> مركز التقارير المتقدمة</h5>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="handleExportWeeklyPDF()">
-                            <i class="fas fa-calendar-week"></i> تقرير أسبوعي
-                        </button>
-                        <button class="btn btn-danger btn-sm rounded-pill px-3" onclick="handleExportMonthlyPDF()">
-                            <i class="fas fa-calendar-alt"></i> تقرير شهري شامل
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-2">
+          <h4 class="fw-bold text-dark mb-0" id="admin-welcome">أهلاً بكِ يا دكتورة مارينا</h4>
+      </div>
+      <div class="d-flex gap-2">
+          <button class="btn btn-outline-dark shadow-sm rounded-pill px-3" onclick="handleExportPDF()">
+            <i class="fas fa-file-pdf"></i> تقرير الحضور
+          </button>
+          <button class="btn btn-dark shadow-sm rounded-pill px-4" onclick="handleLogout()">
+            <i class="fas fa-sign-out-alt"></i> خروج
+          </button>
+      </div>
     </div>
 
     <div class="row g-4">
-      <div class="col-md-4">
+      <div class="col-md-6">
         <div class="card h-100 shadow-sm border-0 rounded-4">
           <div class="card-body p-4">
             <h5 class="card-title text-danger mb-3 fw-bold border-bottom pb-2"><i class="fas fa-cogs"></i> إعدادات المنصة</h5>
             <div class="mb-2">
-                <label class="small fw-bold text-muted">اسم المدرسة:</label>
-                <input class="form-control bg-light border-0 mt-1 shadow-none" id="school-name" placeholder="مدرسة مارينا وجيه">
+                <label class="small fw-bold text-muted">اسم المدرسة/المادة:</label>
+                <input class="form-control bg-light border-0 mt-1" id="school-name" placeholder="مثلاً: مدرسة مارينا وجيه">
             </div>
             <div class="mb-3">
-                <label class="small fw-bold text-muted">المادة الأساسية:</label>
-                <input class="form-control bg-light border-0 mt-1 shadow-none" id="main-subject" placeholder="لغة إنجليزية">
+                <label class="small fw-bold text-muted">المادة الأساسية الحالية:</label>
+                <input class="form-control bg-light border-0 mt-1" id="main-subject" placeholder="مثلاً: لغة إنجليزية">
             </div>
             <button class="btn btn-danger w-100 py-2 fw-bold rounded-3 shadow-sm" onclick="handleSaveSettings()">حفظ الإعدادات</button>
           </div>
         </div>
       </div>
 
-      <div class="col-md-4">
+      <div class="col-md-6">
         <div class="card h-100 shadow-sm border-0 rounded-4">
           <div class="card-body p-4">
-            <h5 class="card-title text-success mb-3 fw-bold border-bottom pb-2"><i class="fas fa-file-pdf"></i> المذكرات والواجبات</h5>
-            <input class="form-control bg-light border-0 mb-2 mt-1 shadow-none" id="file-title" placeholder="اسم الملف">
-            <input class="form-control bg-light border-0 mb-2 shadow-none" id="file-url" placeholder="رابط الملف (Drive)">
-            <select class="form-select bg-light border-0 mb-2 shadow-none" id="file-type">
-                <option value="note">مذكرة شرح</option>
-                <option value="homework">واجب أسبوعي</option>
-            </select>
-            <button class="btn btn-success w-100 py-2 fw-bold rounded-3 shadow-sm" onclick="handleUploadFile()">نشر للملف الآن</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-4">
-        <div class="card h-100 shadow-sm border-0 rounded-4">
-          <div class="card-body p-4">
-            <h5 class="card-title text-primary mb-3 fw-bold border-bottom pb-2"><i class="fas fa-pencil-alt"></i> الكويزات التفاعلية</h5>
-            <input class="form-control bg-light border-0 mb-2 mt-1 shadow-none" id="quiz-title" placeholder="عنوان الكويز">
-            <input class="form-control bg-light border-0 mb-2 shadow-none" id="quiz-link" placeholder="رابط الاختبار">
-            <button class="btn btn-primary w-100 py-2 fw-bold rounded-3 shadow-sm" onclick="handleCreateQuiz()">نشر الاختبار</button>
+            <h5 class="card-title text-success mb-3 fw-bold border-bottom pb-2"><i class="fas fa-cloud-upload-alt"></i> المذكرات والملفات (PDF)</h5>
+            <input class="form-control bg-light border-0 mb-2 mt-1" id="file-title" placeholder="اسم المذكرة">
+            <input class="form-control bg-light border-0 mb-2" id="file-url" placeholder="رابط الملف (جوجل درايف)">
+            <button class="btn btn-success w-100 py-2 fw-bold rounded-3 shadow-sm" onclick="handleUploadFile()">نشر المذكرة للطلاب</button>
           </div>
         </div>
       </div>
@@ -143,10 +106,13 @@
       <div class="col-12">
         <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
           <div class="card-body p-4">
-            <h5 class="card-title text-primary mb-3 fw-bold border-bottom pb-2"><i class="fas fa-users-cog"></i> إدارة الطلاب والسكرتارية</h5>
+            <h5 class="card-title text-primary mb-3 fw-bold border-bottom pb-2"><i class="fas fa-users-cog"></i> التحكم في الطلاب والسكرتارية</h5>
             <div class="table-responsive custom-scroll" style="max-height: 400px;">
                 <ul id="users-list" class="list-group list-group-flush">
-                  <li class="text-center py-4 text-muted small">جاري جلب البيانات...</li>
+                  <li class="text-center py-4 text-muted small">
+                    <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
+                    <br> جاري جلب البيانات من السحابة...
+                  </li>
                 </ul>
             </div>
           </div>
@@ -154,12 +120,12 @@
       </div>
 
       <div class="col-md-7">
-        <div class="card shadow-sm border-0 rounded-4 h-100">
+        <div class="card shadow-sm border-0 h-100 rounded-4">
           <div class="card-body p-4">
-            <h5 class="card-title text-warning mb-3 fw-bold border-bottom pb-2"><i class="fas fa-tasks"></i> تصحيح واجبات الـ PDF المرفوعة</h5>
-            <div class="custom-scroll" style="max-height: 350px;">
-                <ul id="hw-eval-list" class="list-group list-group-flush">
-                    <li class="list-group-item text-center text-muted py-4 small">لا يوجد واجبات بانتظار التصحيح</li>
+            <h5 class="card-title text-warning mb-3 fw-bold border-bottom pb-2"><i class="fas fa-clipboard-check"></i> طلبات الحضور المعلقة</h5>
+            <div class="custom-scroll" style="max-height: 300px;">
+                <ul id="attendance-requests" class="list-group list-group-flush">
+                    <li class="list-group-item text-center text-muted py-4 small">لا يوجد طلبات حالياً</li>
                 </ul>
             </div>
           </div>
@@ -167,13 +133,43 @@
       </div>
 
       <div class="col-md-5">
-        <div class="card shadow-sm border-0 rounded-4 h-100 bg-white">
+        <div class="card shadow-sm border-0 h-100 bg-white rounded-4 shadow-sm">
           <div class="card-body p-4">
-            <h5 class="card-title text-dark mb-3 fw-bold border-bottom pb-2"><i class="fas fa-clock"></i> طلبات الحضور المعلقة</h5>
-            <div class="custom-scroll" style="max-height: 350px;">
-                <ul id="attendance-requests" class="list-group list-group-flush">
-                    <li class="list-group-item text-center text-muted py-4 small">لا يوجد طلبات حالياً</li>
-                </ul>
-            </div>
+            <h5 class="card-title text-dark mb-3 fw-bold border-bottom pb-2"><i class="fas fa-pencil-alt"></i> الكويزات التفاعلية</h5>
+            <input class="form-control bg-light border-0 mb-2 mt-1" id="quiz-title" placeholder="عنوان الكويز">
+            <input class="form-control bg-light border-0 mb-2" id="quiz-link" placeholder="رابط الاختبار">
+            <p class="small text-muted mb-3"><i class="fas fa-info-circle me-1"></i> رابط الاختبار سيظهر للطالب فوراً.</p>
+            <button class="btn btn-primary w-100 py-2 fw-bold rounded-3 shadow-sm" onclick="handleCreateQuiz()">نشر الاختبار</button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="text-center py-4 text-muted small">
+      © 2026 مدرسة مارينا وجيه - جميع الحقوق محفوظة
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    function handleLogout() {
+      if (typeof window.triggerLogout === 'function') window.triggerLogout();
+    }
+    function handleSaveSettings() {
+      if (typeof window.triggerSaveSettings === 'function') window.triggerSaveSettings();
+    }
+    function handleUploadFile() {
+      if (typeof window.triggerUploadFile === 'function') window.triggerUploadFile();
+    }
+    function handleCreateQuiz() {
+      if (typeof window.triggerCreateQuiz === 'function') window.triggerCreateQuiz();
+    }
+    function handleExportPDF() {
+      if (typeof window.triggerExportPDF === 'function') window.triggerExportPDF();
+    }
+  </script>
+
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>
