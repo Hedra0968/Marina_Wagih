@@ -1,8 +1,4 @@
-/* JS File: secretary.js
-    Integrated Version: Student Registration & Attendance Approval
-    Rights: © 2026 Marina Wagih & Hadra Victor. All Rights Reserved.
-*/
-Import { auth, db } from './firebase-config.js';
+import { auth, db } from './firebase-config.js';
 import { logout } from './auth.js';
 import { 
     collection, onSnapshot, updateDoc, doc, getDoc, 
